@@ -7,6 +7,7 @@ import RecipeModal from './components/RecipeModal/RecipeModal.jsx';
 
 export default function App() {
   const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const handleViewRecipe = useCallback((recipe) => {
     setSelectedRecipe(recipe);
@@ -16,11 +17,19 @@ export default function App() {
     setSelectedRecipe(null);
   }, []);
 
+  const handleMenuToggle = useCallback(() => {
+    setMenuOpen((v) => !v);
+  }, []);
+
+  const handleMenuClose = useCallback(() => {
+    setMenuOpen(false);
+  }, []);
+
   return (
     <>
-      <TopBar />
+      <TopBar onMenuToggle={handleMenuToggle} />
       <UsdaKeyNotice />
-      <TOCNav />
+      <TOCNav open={menuOpen} onClose={handleMenuClose} />
       <RecipeList onViewRecipe={handleViewRecipe} />
       <RecipeModal recipe={selectedRecipe} onClose={handleCloseModal} />
     </>

@@ -50,3 +50,26 @@
   background: #ccc;
   cursor: default;
 }
+
+@media (max-width: 480px) {
+  .recipeName {
+    font-size: 13px;
+  }
+  .recipeTags {
+    font-size: 11px;
+    line-height: 1.3;
+  }
+  .recipeSource {
+    font-size: 11px;
+    white-space: normal;
+  }
+  .blankBadge {
+    font-size: 9px;
+    padding: 1px 5px;
+    margin-left: 4px;
+  }
+  .viewBtn {
+    padding: 4px 9px;
+    font-size: 11px;
+  }
+}

@@ -1,6 +1,6 @@
 .sectionBlock {
   margin-bottom: 36px;
-  scroll-margin-top: 100px;
+  scroll-margin-top: 70px;
 }
 
 .sectionHeader {
@@ -48,4 +48,21 @@
   border-bottom: 1px solid var(--border);
   font-size: 14px;
   vertical-align: middle;
+}
+
+@media (max-width: 480px) {
+  .sectionBlock {
+    margin-bottom: 28px;
+  }
+  .sectionHeader {
+    font-size: 14px;
+  }
+  .table thead th {
+    padding: 4px 6px;
+    font-size: 10px;
+  }
+  .table tbody td {
+    padding: 8px 6px;
+    font-size: 13px;
+  }
 }

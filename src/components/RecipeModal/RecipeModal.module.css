@@ -177,9 +177,28 @@
 
 @media (max-width: 600px) {
   .modalOverlay {
-    padding: 20px 8px;
+    padding: 12px 6px;
   }
   .modalCard {
     max-width: 100%;
+  }
+  .modalHeader {
+    padding: 12px 14px;
+  }
+  .modalTitle {
+    font-size: 16px;
+  }
+  .modalMeta {
+    font-size: 11px;
+  }
+  .modalBody {
+    padding: 14px;
+  }
+  .ingList li {
+    font-size: 13px;
+  }
+  .stepName,
+  .stepDetail {
+    font-size: 12px;
   }
 }
