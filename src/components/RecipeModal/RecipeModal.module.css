@@ -56,6 +56,13 @@
   color: #fff;
 }
 
+.servingEstimate {
+  color: #85B7EB;
+  font-style: italic;
+  cursor: help;
+  border-bottom: 1px dotted rgba(133, 183, 235, 0.5);
+}
+
 .modalClose {
   background: none;
   border: none;

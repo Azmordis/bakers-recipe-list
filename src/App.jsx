@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import TopBar from './components/TopBar/TopBar.jsx';
+import UsdaKeyNotice from './components/UsdaKeyNotice/UsdaKeyNotice.jsx';
 import TOCNav from './components/TOCNav/TOCNav.jsx';
 import RecipeList from './components/RecipeList/RecipeList.jsx';
 import RecipeModal from './components/RecipeModal/RecipeModal.jsx';
@@ -18,6 +19,7 @@ export default function App() {
   return (
     <>
       <TopBar />
+      <UsdaKeyNotice />
       <TOCNav />
       <RecipeList onViewRecipe={handleViewRecipe} />
       <RecipeModal recipe={selectedRecipe} onClose={handleCloseModal} />

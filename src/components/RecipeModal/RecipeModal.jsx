@@ -1,11 +1,16 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import styles from './RecipeModal.module.css';
+import MacroCard from '../MacroCard/MacroCard.jsx';
+import { estimateServings } from '../../utils/estimateServings.js';
+import { estimateMacros } from '../../utils/estimateMacros.js';
+
+const MACRO_EXCLUDED_SECTIONS = new Set(['SEASONINGS', 'DOUGHS']);
 
 function isUrl(str) {
   return typeof str === 'string' && /^https?:\/\//i.test(str);
 }
 
-function MetaLine({ recipe }) {
+function MetaLine({ recipe, servingEstimate }) {
   const tags = recipe.tags?.length ? recipe.tags.join(' ') : '';
   const hasSource = recipe.source && recipe.source !== 'Original';
   return (
@@ -25,6 +30,17 @@ function MetaLine({ recipe }) {
         </span>
       ) : (
         <span>Original recipe</span>
+      )}
+      {servingEstimate && (
+        <>
+          <span> · </span>
+          <span
+            className={styles.servingEstimate}
+            title={`${servingEstimate.basis} — actual yield may vary`}
+          >
+            ~{servingEstimate.servings} servings*
+          </span>
+        </>
       )}
     </div>
   );
@@ -79,6 +95,15 @@ function Instructions({ steps }) {
 }
 
 export default function RecipeModal({ recipe, onClose }) {
+  // Compute serving estimate synchronously when the recipe changes.
+  const servingEstimate = useMemo(
+    () => (recipe ? estimateServings(recipe) : null),
+    [recipe]
+  );
+
+  // Macro estimation is async (USDA API). Reset state every time the recipe changes.
+  const [macroState, setMacroState] = useState({ status: 'unavailable', macros: null });
+
   useEffect(() => {
     if (!recipe) return;
     const onKey = (e) => {
@@ -92,6 +117,50 @@ export default function RecipeModal({ recipe, onClose }) {
     };
   }, [recipe, onClose]);
 
+  useEffect(() => {
+    if (!recipe || recipe.is_blank || MACRO_EXCLUDED_SECTIONS.has(recipe.section)) {
+      setMacroState({ status: 'unavailable', macros: null });
+      return;
+    }
+    if (!servingEstimate) {
+      setMacroState({ status: 'unavailable', macros: null });
+      return;
+    }
+
+    let cancelled = false;
+    setMacroState({ status: 'loading', macros: null });
+    estimateMacros(recipe, servingEstimate.servings)
+      .then((macros) => {
+        if (cancelled) return;
+        if (!macros) {
+          setMacroState({ status: 'unavailable', macros: null });
+          return;
+        }
+        if (macros.matchedCount === 0) {
+          // Differentiate rate-limited (transient) from genuine no-match
+          setMacroState({
+            status: macros.rateLimited ? 'rate-limited' : 'unavailable',
+            macros: null,
+          });
+          return;
+        }
+        setMacroState({
+          status: 'done',
+          macros,
+          matchedCount: macros.matchedCount,
+          totalCount: macros.totalCount,
+        });
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setMacroState({ status: 'error', macros: null });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [recipe, servingEstimate]);
+
   if (!recipe) return null;
 
   const handleOverlayClick = (e) => {
@@ -104,7 +173,7 @@ export default function RecipeModal({ recipe, onClose }) {
         <div className={styles.modalHeader}>
           <div>
             <div id="modal-title" className={styles.modalTitle}>{recipe.name}</div>
-            <MetaLine recipe={recipe} />
+            <MetaLine recipe={recipe} servingEstimate={servingEstimate} />
           </div>
           <button
             type="button"
@@ -122,6 +191,12 @@ export default function RecipeModal({ recipe, onClose }) {
             <>
               <Ingredients items={recipe.ingredients} />
               <Instructions steps={recipe.instructions} />
+              <MacroCard
+                status={macroState.status}
+                macros={macroState.macros}
+                matchedCount={macroState.matchedCount}
+                totalCount={macroState.totalCount}
+              />
             </>
           )}
         </div>

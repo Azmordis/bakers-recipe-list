@@ -1,0 +1,49 @@
+.notice {
+  background: #fef3e0;
+  border-bottom: 1px solid #f0d9a8;
+  color: var(--amber-deep);
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.text {
+  flex: 1;
+}
+
+.text code {
+  background: rgba(0, 0, 0, 0.06);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+}
+
+.link {
+  color: var(--blue);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.link:hover {
+  color: var(--navy);
+}
+
+.dismiss {
+  background: none;
+  border: none;
+  color: var(--amber-deep);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 6px;
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+.dismiss:hover {
+  opacity: 1;
+}

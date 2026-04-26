@@ -1,0 +1,121 @@
+// Fetches per-100g nutrient values for a single ingredient name from the
+// USDA FoodData Central API, with sessionStorage caching.
+//
+// Returns { calories, protein, fat, carbs, fiber } in grams (or kcal for energy),
+// or null on miss/error. Failures are silent — callers should treat null as
+// "skip this ingredient."
+//
+// === API KEY ===
+// DEMO_KEY is severely rate-limited (~30 requests/hour per IP) and will start
+// returning HTTP 429 after a single recipe's worth of lookups. For real use,
+// register a free key at https://fdc.nal.usda.gov/api-key-signup.html
+// (instant, 1000 requests/hour) and replace USDA_API_KEY below.
+//
+// === NUTRIENT IDs ===
+// Verified against a live USDA response (chicken breast):
+//   1008 Energy (KCAL)
+//   1003 Protein (G)
+//   1004 Total lipid / fat (G)
+//   1005 Carbohydrate, by difference (G)
+//   1079 Fiber, total dietary (G)
+
+export const USDA_API_KEY = 'DEMO_KEY';
+const USDA_BASE = 'https://api.nal.usda.gov/fdc/v1';
+const CACHE_PREFIX = 'usda_v1_';
+
+// Track session-wide rate-limit state. Once 429d, skip further lookups for
+// the rest of the session — they'd just keep failing.
+let rateLimited = false;
+
+function extractMacros(food) {
+  const find = (id) => {
+    const hit = food.foodNutrients?.find((n) => n.nutrientId === id);
+    return hit ? hit.value : 0;
+  };
+  return {
+    calories: find(1008),
+    protein: find(1003),
+    fat: find(1004),
+    carbs: find(1005),
+    fiber: find(1079),
+  };
+}
+
+// Score a USDA result. Lower is better. We prefer:
+//   - shorter descriptions (raw "Chicken breast" beats "Chicken breast tenders, breaded, uncooked")
+//   - Foundation > SR Legacy
+//   - descriptions that don't contain "breaded", "with sauce", "frozen", etc.
+function scoreResult(food) {
+  let score = (food.description || '').length;
+  if (food.dataType === 'Foundation') score -= 30;
+  const desc = (food.description || '').toLowerCase();
+  const penaltyWords = ['breaded', 'in oil', 'with sauce', 'with gravy', 'frozen', 'canned', 'flavored', 'sweetened'];
+  for (const w of penaltyWords) {
+    if (desc.includes(w)) score += 50;
+  }
+  return score;
+}
+
+function readCache(key) {
+  try {
+    const raw = sessionStorage.getItem(CACHE_PREFIX + key);
+    if (!raw) return undefined;
+    return JSON.parse(raw);
+  } catch {
+    return undefined;
+  }
+}
+
+function writeCache(key, value) {
+  try {
+    sessionStorage.setItem(CACHE_PREFIX + key, JSON.stringify(value));
+  } catch {
+    /* quota exceeded — ignore */
+  }
+}
+
+export function isRateLimited() {
+  return rateLimited;
+}
+
+export async function fetchNutrition(ingredientName) {
+  if (!ingredientName) return null;
+  const key = ingredientName.trim().toLowerCase();
+  if (!key) return null;
+
+  // Cache: undefined = never seen, null = USDA returned no foods (real miss)
+  const cached = readCache(key);
+  if (cached !== undefined) return cached;
+
+  // Once we've been 429d this session, stop hammering — every call will fail
+  if (rateLimited) return null;
+
+  try {
+    const url =
+      `${USDA_BASE}/foods/search?query=${encodeURIComponent(key)}` +
+      `&dataType=SR%20Legacy,Foundation&pageSize=5&api_key=${USDA_API_KEY}`;
+    const res = await fetch(url);
+    if (res.status === 429 || res.status === 403) {
+      // Rate-limited or auth error — DON'T cache (transient), but stop further lookups
+      rateLimited = true;
+      return null;
+    }
+    if (!res.ok) {
+      // Other transient errors — don't cache, just return null this time
+      return null;
+    }
+    const data = await res.json();
+    const foods = data.foods || [];
+    if (foods.length === 0) {
+      writeCache(key, null);  // genuine miss — cache so we don't retry
+      return null;
+    }
+    const best = foods.slice().sort((a, b) => scoreResult(a) - scoreResult(b))[0];
+    const macros = extractMacros(best);
+    writeCache(key, macros);
+    return macros;
+  } catch {
+    // Network error — don't cache
+    return null;
+  }
+}
