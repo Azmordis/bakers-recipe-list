@@ -6,10 +6,21 @@
 // "skip this ingredient."
 //
 // === API KEY ===
-// DEMO_KEY is severely rate-limited (~30 requests/hour per IP) and will start
-// returning HTTP 429 after a single recipe's worth of lookups. For real use,
-// register a free key at https://fdc.nal.usda.gov/api-key-signup.html
-// (instant, 1000 requests/hour) and replace USDA_API_KEY below.
+// Pulled from env at build time (Vite replaces `import.meta.env.VITE_*`
+// inline). Falls back to DEMO_KEY when no env var is set, which works for
+// ~30 lookups before USDA starts returning 429.
+//
+// To configure:
+//   - Local dev: create `.env.local` with `VITE_USDA_API_KEY=your_key`
+//     (gitignored — never deployed; just makes your local dev server
+//     hit the API at full rate)
+//   - Production: set the GitHub repo secret `USDA_API_KEY` (the deploy
+//     workflow injects it at build time as VITE_USDA_API_KEY)
+//
+// IMPORTANT: a key configured this way IS visible in the deployed JS bundle.
+// USDA keys are free, rate-limited per IP, and can't be domain-restricted —
+// the realistic blast radius of leakage is having to re-register a new key.
+// Don't reuse this key for anything sensitive.
 //
 // === NUTRIENT IDs ===
 // Verified against a live USDA response (chicken breast):
@@ -19,7 +30,8 @@
 //   1005 Carbohydrate, by difference (G)
 //   1079 Fiber, total dietary (G)
 
-export const USDA_API_KEY = 'DEMO_KEY';
+export const USDA_API_KEY =
+  import.meta.env.VITE_USDA_API_KEY || 'DEMO_KEY';
 const USDA_BASE = 'https://api.nal.usda.gov/fdc/v1';
 const CACHE_PREFIX = 'usda_v1_';
 
