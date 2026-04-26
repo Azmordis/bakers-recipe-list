@@ -2853,6 +2853,75 @@
         "is_blank":  true
     },
     {
+        "name":  "Classic Coleslaw Dressing",
+        "section":  "SIDES",
+        "category":  "Sides",
+        "source":  "Unknown (web source)",
+        "tags":  [
+                     "#dressing",
+                     "#coleslaw",
+                     "#sides",
+                     "#vegetarian"
+                 ],
+        "ingredients":  [
+                            {
+                                "type":  "item",
+                                "text":  "Scant ¾ cup mayonnaise (or vegan mayo)"
+                            },
+                            {
+                                "type":  "item",
+                                "text":  "2 Tbsp apple cider vinegar"
+                            },
+                            {
+                                "type":  "item",
+                                "text":  "1 Tbsp Dijon mustard"
+                            },
+                            {
+                                "type":  "item",
+                                "text":  "1 Tbsp pure maple syrup"
+                            },
+                            {
+                                "type":  "item",
+                                "text":  "¾ tsp celery seeds"
+                            },
+                            {
+                                "type":  "item",
+                                "text":  "¼ tsp sea salt"
+                            },
+                            {
+                                "type":  "item",
+                                "text":  "1 tsp garlic powder"
+                            },
+                            {
+                                "type":  "item",
+                                "text":  "1 tsp onion powder"
+                            },
+                            {
+                                "type":  "item",
+                                "text":  "Freshly ground black pepper, to taste"
+                            }
+                        ],
+        "instructions":  [
+                             {
+                                 "step":  "Mix Dressing",
+                                 "detail":  "Whisk together mayo, apple cider vinegar, Dijon mustard, maple syrup, celery seeds, salt, garlic powder, onion powder, and black pepper until smooth."
+                             },
+                             {
+                                 "step":  "Dress Coleslaw",
+                                 "detail":  "Pour dressing over 6–8 cups coleslaw mix (1 standard store bag). Toss to coat evenly."
+                             },
+                             {
+                                 "step":  "Rest",
+                                 "detail":  "Refrigerate for 1–4 hours, stirring occasionally, to let flavors develop."
+                             },
+                             {
+                                 "step":  "Serve Cold",
+                                 "detail":  "Keep refrigerated until ready to serve."
+                             }
+                         ],
+        "is_blank":  false
+    },
+    {
         "name":  "Protein Balls 1",
         "section":  "SNACKS",
         "category":  "Snacks",
