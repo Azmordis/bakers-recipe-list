@@ -23,7 +23,7 @@ export const SECTIONS = [
   { key: "FOR REVIEW --- CURRY", label: "For Review: Curry", id: "sec-FOR-REVIEW-CURRY", review: true },
   { key: "FOR REVIEW --- SOUPS", label: "For Review: Soups", id: "sec-FOR-REVIEW-SOUPS", review: true },
   { key: "FOR REVIEW - SOUPS", label: "For Review: Soups (More)", id: "sec-FOR-REVIEW-SOUPS-NEW", review: true },
-  { key: "FOR REVIEW - MARINADES - CHICKEN", label: "For Review: Marinades — Chicken", id: "sec-FOR-REVIEW-MARINADES-CHICKEN", review: true },
-  { key: "FOR REVIEW - MARINADES - BEEF", label: "For Review: Marinades — Beef", id: "sec-FOR-REVIEW-MARINADES-BEEF", review: true },
-  { key: "FOR REVIEW - MARINADES - PORK", label: "For Review: Marinades — Pork", id: "sec-FOR-REVIEW-MARINADES-PORK", review: true },
+  { key: "FOR REVIEW - MARINADES - CHICKEN", label: "For Review: Marinades - Chicken", id: "sec-FOR-REVIEW-MARINADES-CHICKEN", review: true },
+  { key: "FOR REVIEW - MARINADES - BEEF", label: "For Review: Marinades - Beef", id: "sec-FOR-REVIEW-MARINADES-BEEF", review: true },
+  { key: "FOR REVIEW - MARINADES - PORK", label: "For Review: Marinades - Pork", id: "sec-FOR-REVIEW-MARINADES-PORK", review: true },
 ];
