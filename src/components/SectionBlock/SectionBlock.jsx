@@ -1,7 +1,7 @@
 import RecipeRow from '../RecipeRow/RecipeRow.jsx';
 import styles from './SectionBlock.module.css';
 
-export default function SectionBlock({ section, recipes, onViewRecipe }) {
+export default function SectionBlock({ section, recipes, onViewRecipe, hideSource }) {
   const headerClass = section.review
     ? `${styles.sectionHeader} ${styles.review}`
     : styles.sectionHeader;
@@ -14,16 +14,17 @@ export default function SectionBlock({ section, recipes, onViewRecipe }) {
           <tr>
             <th style={{ width: '40%' }}>Recipe</th>
             <th>Tags</th>
-            <th style={{ width: '100px' }}>Source</th>
+            {!hideSource && <th style={{ width: '100px' }}>Source</th>}
             <th style={{ width: '60px' }}></th>
           </tr>
         </thead>
         <tbody>
-          {recipes.map((recipe) => (
+          {recipes.map((recipe, i) => (
             <RecipeRow
-              key={recipe._index}
+              key={`${section.id}-${i}`}
               recipe={recipe}
               onViewRecipe={onViewRecipe}
+              hideSource={hideSource}
             />
           ))}
         </tbody>

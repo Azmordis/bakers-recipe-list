@@ -1,6 +1,6 @@
 import styles from './RecipeRow.module.css';
 
-export default function RecipeRow({ recipe, onViewRecipe }) {
+export default function RecipeRow({ recipe, onViewRecipe, hideSource }) {
   const rowClass = recipe.is_blank ? styles.blankRow : '';
   const tags = recipe.tags?.length ? recipe.tags.join(' ') : '';
 
@@ -11,7 +11,9 @@ export default function RecipeRow({ recipe, onViewRecipe }) {
         {recipe.is_blank && <span className={styles.blankBadge}>coming soon</span>}
       </td>
       <td className={styles.recipeTags}>{tags}</td>
-      <td className={styles.recipeSource}>{recipe.source || ''}</td>
+      {!hideSource && (
+        <td className={styles.recipeSource}>{recipe.source || ''}</td>
+      )}
       <td style={{ textAlign: 'right' }}>
         <button
           type="button"
