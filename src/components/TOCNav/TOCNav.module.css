@@ -1,0 +1,28 @@
+.tocWrap {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 20px;
+  position: sticky;
+  top: 49px;
+  z-index: 199;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.pill {
+  display: inline-block;
+  background: var(--pill-bg);
+  color: var(--pill-text);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+  text-decoration: none;
+  margin-right: 6px;
+  transition: background 0.15s;
+}
+
+.pill:hover {
+  background: var(--amber-dark);
+  color: #fff;
+}

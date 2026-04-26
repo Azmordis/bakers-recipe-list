@@ -1,0 +1,52 @@
+.recipeName {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.recipeTags {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.recipeSource {
+  color: var(--text-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.blankRow td {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.blankBadge {
+  font-size: 10px;
+  background: #f0ede9;
+  color: #888780;
+  padding: 2px 7px;
+  border-radius: 10px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.viewBtn {
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.viewBtn:hover {
+  background: var(--navy);
+}
+
+.viewBtn:disabled {
+  background: #ccc;
+  cursor: default;
+}

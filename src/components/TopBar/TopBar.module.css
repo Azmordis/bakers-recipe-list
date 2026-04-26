@@ -1,0 +1,20 @@
+.topBar {
+  background: var(--navy);
+  padding: 14px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+}
+
+.title {
+  color: var(--amber);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.subtitle {
+  color: #85B7EB;
+  font-size: 13px;
+  margin-left: 8px;
+}
