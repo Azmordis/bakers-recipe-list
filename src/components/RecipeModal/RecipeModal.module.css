@@ -1,7 +1,13 @@
+/* Recipe modal — Warm Cookbook palette per card_color_schemes.md.
+ * The card is white with terracotta heading + slate-blue meta.
+ * The blue header band from the original design is removed; the card
+ * is one continuous white surface with a subtle divider under the title.
+ */
+
 .modalOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(4, 44, 83, 0.78);
+  background: rgba(4, 44, 83, 0.72);
   z-index: 500;
   display: flex;
   align-items: flex-start;
@@ -12,22 +18,23 @@
 }
 
 .modalCard {
-  background: var(--surface);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: var(--card-surface);
+  border: 1px solid var(--card-border);
   border-radius: 12px;
   width: 100%;
   max-width: 620px;
   padding: 0;
   position: relative;
   box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.45),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
+    0 20px 60px rgba(0, 0, 0, 0.40),
+    0 0 0 1px rgba(0, 0, 0, 0.04);
 }
 
 .modalHeader {
-  background: var(--blue-mid);
+  background: var(--card-surface);
   border-radius: 12px 12px 0 0;
-  padding: 16px 20px;
+  border-bottom: 1px solid var(--card-divider);
+  padding: 18px 22px 14px;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -35,61 +42,68 @@
 }
 
 .modalTitle {
-  color: var(--amber);
-  font-size: 18px;
+  color: var(--card-heading);
+  font-size: 22px;
   font-weight: 700;
-  line-height: 1.3;
+  line-height: 1.25;
+  letter-spacing: -0.2px;
 }
 
 .modalMeta {
-  color: #85B7EB;
+  color: var(--card-tag);
   font-size: 12px;
-  margin-top: 4px;
+  font-style: italic;
+  margin-top: 6px;
+  line-height: 1.5;
 }
 
 .sourceLink {
-  color: #85B7EB;
+  color: var(--card-tag);
   text-decoration: underline;
 }
 
 .sourceLink:hover {
-  color: #fff;
+  color: var(--card-tag-strong);
 }
 
 .servingEstimate {
-  color: #85B7EB;
+  color: var(--card-tag);
   font-style: italic;
   cursor: help;
-  border-bottom: 1px dotted rgba(133, 183, 235, 0.5);
+  border-bottom: 1px dotted rgba(107, 127, 163, 0.5);
 }
 
 .modalClose {
   background: none;
   border: none;
-  color: #85B7EB;
+  color: var(--card-muted);
   font-size: 20px;
   cursor: pointer;
   line-height: 1;
-  padding: 0;
+  padding: 4px 6px;
+  border-radius: 4px;
   flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
 }
 
 .modalClose:hover {
-  color: #fff;
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--card-body);
 }
 
 .modalBody {
-  padding: 20px;
+  padding: 18px 22px 22px;
+  color: var(--card-body);
 }
 
 .modalSectionTitle {
   font-size: 11px;
   font-weight: 700;
-  color: var(--blue);
+  color: var(--card-section-label);
   text-transform: uppercase;
   letter-spacing: 0.6px;
-  margin: 16px 0 8px;
-  border-bottom: 1px solid var(--border);
+  margin: 18px 0 8px;
+  border-bottom: 1px solid var(--card-divider);
   padding-bottom: 4px;
 }
 
@@ -98,27 +112,31 @@
 }
 
 .ingList {
-  list-style: none;
-  padding: 0;
+  list-style: disc;
+  padding-left: 22px;
 }
 
 .ingList li {
   font-size: 14px;
-  padding: 3px 0;
-  color: var(--text);
+  padding: 2px 0;
+  color: var(--card-body);
+  line-height: 1.45;
 }
 
 .ingList li.ingSection {
+  list-style: none;
+  margin-left: -22px;
   font-weight: 600;
-  color: var(--blue-mid);
-  margin-top: 6px;
+  color: var(--card-tag-strong);
+  margin-top: 8px;
   font-size: 13px;
+  font-style: italic;
 }
 
 .stepList {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .stepItem {
@@ -128,7 +146,7 @@
 }
 
 .stepNum {
-  background: var(--blue);
+  background: var(--card-heading);
   color: #fff;
   border-radius: 50%;
   width: 22px;
@@ -139,18 +157,18 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  margin-top: 1px;
+  margin-top: 2px;
 }
 
 .stepName {
   font-weight: 600;
   font-size: 13px;
-  color: var(--text);
+  color: var(--card-section-label);
 }
 
 .stepDetail {
   font-size: 13px;
-  color: #555;
+  color: var(--card-body);
   margin-top: 2px;
   line-height: 1.5;
 }
@@ -158,20 +176,20 @@
 .verHeader {
   font-size: 11px;
   font-weight: 700;
-  color: var(--blue-mid);
+  color: var(--card-tag-strong);
   text-transform: uppercase;
   letter-spacing: 0.6px;
   margin: 14px 0 6px;
-  padding: 4px 8px;
-  background: #f0f6ff;
-  border-left: 3px solid var(--blue-mid);
+  padding: 4px 10px;
+  background: rgba(107, 127, 163, 0.10);
+  border-left: 3px solid var(--card-tag);
   border-radius: 2px;
 }
 
 .comingSoon {
   text-align: center;
   padding: 30px 20px;
-  color: var(--text-muted);
+  color: var(--card-muted);
   font-size: 15px;
 }
 
@@ -183,16 +201,16 @@
     max-width: 100%;
   }
   .modalHeader {
-    padding: 12px 14px;
+    padding: 14px 16px 12px;
   }
   .modalTitle {
-    font-size: 16px;
+    font-size: 19px;
   }
   .modalMeta {
     font-size: 11px;
   }
   .modalBody {
-    padding: 14px;
+    padding: 14px 16px 18px;
   }
   .ingList li {
     font-size: 13px;

@@ -12,6 +12,17 @@
   --amber-deep: #412402;
   --pill-bg: #EF9F27;
   --pill-text: #412402;
+
+  /* === Warm Cookbook palette (recipe modal only — see card_color_schemes.md) === */
+  --card-surface: #FFFFFF;
+  --card-border: #E5DFCF;
+  --card-heading: #B5631F;
+  --card-tag: #6B7FA3;
+  --card-tag-strong: #5A6B8E;
+  --card-section-label: #1A2B4A;
+  --card-body: #1C1C1C;
+  --card-muted: #6B7280;
+  --card-divider: #C9D3E0;
 }
 
 * {
