@@ -859,8 +859,16 @@
     ],
     "ingredients": [
       {
+        "type": "header",
+        "text": "Chicken:"
+      },
+      {
         "type": "item",
         "text": "2 lb chicken drumsticks"
+      },
+      {
+        "type": "header",
+        "text": "Marinade:"
       },
       {
         "type": "item",
@@ -1834,8 +1842,16 @@
     ],
     "ingredients": [
       {
+        "type": "header",
+        "text": "Chicken:"
+      },
+      {
         "type": "item",
         "text": "1 lb chicken breasts, cut into bite-sized pieces"
+      },
+      {
+        "type": "header",
+        "text": "Coating:"
       },
       {
         "type": "item",
@@ -1847,7 +1863,15 @@
       },
       {
         "type": "item",
+        "text": "¼ tsp baking soda"
+      },
+      {
+        "type": "item",
         "text": "Vegetable oil (for frying)"
+      },
+      {
+        "type": "header",
+        "text": "Sauce:"
       },
       {
         "type": "item",
@@ -1872,10 +1896,6 @@
       {
         "type": "item",
         "text": "1 Tbsp rice wine"
-      },
-      {
-        "type": "item",
-        "text": "¼ tsp baking soda"
       },
       {
         "type": "item",
@@ -1929,6 +1949,10 @@
     ],
     "ingredients": [
       {
+        "type": "header",
+        "text": "Main:"
+      },
+      {
         "type": "item",
         "text": "2 Tbsp vegetable oil"
       },
@@ -1959,6 +1983,10 @@
       {
         "type": "item",
         "text": "½ cup green onion, sliced"
+      },
+      {
+        "type": "header",
+        "text": "Sauce:"
       },
       {
         "type": "item",
@@ -2025,6 +2053,10 @@
     ],
     "ingredients": [
       {
+        "type": "header",
+        "text": "Salad:"
+      },
+      {
         "type": "item",
         "text": "3 cups spinach"
       },
@@ -2035,6 +2067,10 @@
       {
         "type": "item",
         "text": "½ cup walnuts"
+      },
+      {
+        "type": "header",
+        "text": "Dressing:"
       },
       {
         "type": "item",
@@ -3638,12 +3674,16 @@
         "text": "Salt and pepper to taste"
       },
       {
+        "type": "header",
+        "text": "Slurry:"
+      },
+      {
         "type": "item",
         "text": "2 tsp cornstarch"
       },
       {
         "type": "item",
-        "text": "2 tsp water (for slurry)"
+        "text": "2 tsp water"
       }
     ],
     "instructions": [
