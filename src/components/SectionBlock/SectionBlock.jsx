@@ -1,7 +1,8 @@
+import { memo } from 'react';
 import RecipeRow from '../RecipeRow/RecipeRow.jsx';
 import styles from './SectionBlock.module.css';
 
-export default function SectionBlock({ section, recipes, onViewRecipe, hideSource }) {
+function SectionBlock({ section, recipes, onViewRecipe, hideSource }) {
   const headerClass = section.review
     ? `${styles.sectionHeader} ${styles.review}`
     : styles.sectionHeader;
@@ -19,9 +20,9 @@ export default function SectionBlock({ section, recipes, onViewRecipe, hideSourc
           </tr>
         </thead>
         <tbody>
-          {recipes.map((recipe, i) => (
+          {recipes.map((recipe) => (
             <RecipeRow
-              key={`${section.id}-${i}`}
+              key={recipe.name}
               recipe={recipe}
               onViewRecipe={onViewRecipe}
               hideSource={hideSource}
@@ -32,3 +33,5 @@ export default function SectionBlock({ section, recipes, onViewRecipe, hideSourc
     </div>
   );
 }
+
+export default memo(SectionBlock);

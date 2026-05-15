@@ -29,6 +29,10 @@
   vertical-align: middle;
 }
 
+.actionCell {
+  text-align: right;
+}
+
 .viewBtn {
   background: var(--blue);
   color: #fff;

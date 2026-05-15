@@ -1,6 +1,7 @@
+import { memo } from 'react';
 import styles from './RecipeRow.module.css';
 
-export default function RecipeRow({ recipe, onViewRecipe, hideSource }) {
+function RecipeRow({ recipe, onViewRecipe, hideSource }) {
   const rowClass = recipe.is_blank ? styles.blankRow : '';
   const tags = recipe.tags?.length ? recipe.tags.join(' ') : '';
 
@@ -14,7 +15,7 @@ export default function RecipeRow({ recipe, onViewRecipe, hideSource }) {
       {!hideSource && (
         <td className={styles.recipeSource}>{recipe.source || ''}</td>
       )}
-      <td style={{ textAlign: 'right' }}>
+      <td className={styles.actionCell}>
         <button
           type="button"
           className={styles.viewBtn}
@@ -26,3 +27,5 @@ export default function RecipeRow({ recipe, onViewRecipe, hideSource }) {
     </tr>
   );
 }
+
+export default memo(RecipeRow);

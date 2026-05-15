@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import styles from './RecipeModal.module.css';
 import MacroCard from '../MacroCard/MacroCard.jsx';
 import { estimateServings } from '../../utils/estimateServings.js';
@@ -98,6 +98,8 @@ function Instructions({ steps }) {
 }
 
 export default function RecipeModal({ recipe, onClose }) {
+  const titleId = useId();
+
   // Compute serving estimate synchronously when the recipe changes.
   const servingEstimate = useMemo(
     () => (recipe ? estimateServings(recipe) : null),
@@ -172,10 +174,10 @@ export default function RecipeModal({ recipe, onClose }) {
 
   return (
     <div className={styles.modalOverlay} onClick={handleOverlayClick}>
-      <div className={styles.modalCard} role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div className={styles.modalCard} role="dialog" aria-modal="true" aria-labelledby={titleId}>
         <div className={styles.modalHeader}>
           <div>
-            <div id="modal-title" className={styles.modalTitle}>{recipe.name}</div>
+            <div id={titleId} className={styles.modalTitle}>{recipe.name}</div>
             <MetaLine recipe={recipe} servingEstimate={servingEstimate} />
           </div>
           <button

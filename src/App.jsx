@@ -4,6 +4,7 @@ import UsdaKeyNotice from './components/UsdaKeyNotice/UsdaKeyNotice.jsx';
 import TOCNav from './components/TOCNav/TOCNav.jsx';
 import RecipeList from './components/RecipeList/RecipeList.jsx';
 import RecipeModal from './components/RecipeModal/RecipeModal.jsx';
+import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary.jsx';
 
 export default function App() {
   const [selectedRecipe, setSelectedRecipe] = useState(null);
@@ -26,12 +27,12 @@ export default function App() {
   }, []);
 
   return (
-    <>
+    <ErrorBoundary>
       <TopBar onMenuToggle={handleMenuToggle} />
       <UsdaKeyNotice />
       <TOCNav open={menuOpen} onClose={handleMenuClose} />
       <RecipeList onViewRecipe={handleViewRecipe} />
       <RecipeModal recipe={selectedRecipe} onClose={handleCloseModal} />
-    </>
+    </ErrorBoundary>
   );
 }
