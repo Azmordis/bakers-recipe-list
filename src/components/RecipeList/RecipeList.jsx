@@ -1,4 +1,4 @@
-import { useDeferredValue, useMemo, useState } from 'react';
+import { useDeferredValue, useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import recipes from '../../data/recipes.json';
 import { SECTIONS } from '../../data/sections.js';
 import { expandVersionedRecipe } from '../../data/expandVersions.js';
@@ -7,13 +7,11 @@ import { useCookHistoryContext } from '../../context/CookHistoryContext.jsx';
 import styles from './RecipeList.module.css';
 
 // ---------------------------------------------------------------------------
-// Module-scope constants — built once at import time, never recreated.
+// Module-scope constants
 // ---------------------------------------------------------------------------
 
 const recipesBySection = (() => {
   const map = new Map();
-  // Filter out is_blank recipes — they're placeholders with no searchable content.
-  // They still appear in the list via displayedBySection which includes all recipes.
   recipes.forEach((recipe) => {
     if (!map.has(recipe.section)) map.set(recipe.section, []);
     map.get(recipe.section).push(recipe);
@@ -23,9 +21,6 @@ const recipesBySection = (() => {
 
 const SECTION_BY_KEY = new Map(SECTIONS.map((s) => [s.key, s]));
 
-// Pre-expand versioned review sections. Blank entries pass through expandVersionedRecipe
-// unchanged (no section markers in empty arrays), so no defensive guard needed there.
-// Blanks are included so "coming soon" rows appear in the correct sections.
 const displayedBySection = (() => {
   const map = new Map();
   for (const [key, recs] of recipesBySection) {
@@ -35,11 +30,18 @@ const displayedBySection = (() => {
   return map;
 })();
 
-// Flat list of all non-blank recipes for the random picker.
-const allReal = recipes.filter((r) => !r.is_blank);
+// All tags with counts — computed once at module scope.
+const allTagCounts = (() => {
+  const counts = new Map();
+  recipes.forEach((r) => {
+    r.tags?.forEach((t) => counts.set(t, (counts.get(t) ?? 0) + 1));
+  });
+  // Sort by count desc, then alphabetically.
+  return [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+})();
 
 // ---------------------------------------------------------------------------
-// Pure helpers — module scope so React never re-allocates them.
+// Helpers
 // ---------------------------------------------------------------------------
 
 function normalise(s) { return (s || '').toLowerCase(); }
@@ -52,8 +54,82 @@ function recipeMatchesQuery(recipe, q) {
   return false;
 }
 
+// sessionStorage key for collapsed sections
+const COLLAPSED_KEY = 'brl_collapsed_sections';
+
+function loadCollapsed() {
+  try {
+    const raw = sessionStorage.getItem(COLLAPSED_KEY);
+    return raw ? new Set(JSON.parse(raw)) : new Set();
+  } catch { return new Set(); }
+}
+
+function saveCollapsed(set) {
+  try { sessionStorage.setItem(COLLAPSED_KEY, JSON.stringify([...set])); }
+  catch { /* ignore */ }
+}
+
 // ---------------------------------------------------------------------------
-// No-results illustration
+// Tag browser modal
+// ---------------------------------------------------------------------------
+
+function TagBrowser({ onSelectTag, onClose }) {
+  const [search, setSearch] = useState('');
+  const inputRef = useRef(null);
+
+  useEffect(() => { inputRef.current?.focus(); }, []);
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  const filtered = search.trim()
+    ? allTagCounts.filter(([tag]) => tag.toLowerCase().includes(search.toLowerCase()))
+    : allTagCounts;
+
+  return (
+    <div className={styles.tagOverlay} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className={styles.tagModal} role="dialog" aria-label="Browse tags">
+        <div className={styles.tagModalHeader}>
+          <span className={styles.tagModalTitle}>Browse Tags</span>
+          <button type="button" className={styles.tagModalClose} onClick={onClose} aria-label="Close">&#x2715;</button>
+        </div>
+        <div className={styles.tagModalSearch}>
+          <input
+            ref={inputRef}
+            type="search"
+            className={styles.tagSearchInput}
+            placeholder="Search tags…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            aria-label="Search tags"
+          />
+        </div>
+        <div className={styles.tagCloud}>
+          {filtered.map(([tag, count]) => (
+            <button
+              key={tag}
+              type="button"
+              className={styles.tagPill}
+              onClick={() => { onSelectTag(tag); onClose(); }}
+            >
+              {tag}
+              <span className={styles.tagCount}>{count}</span>
+            </button>
+          ))}
+          {filtered.length === 0 && (
+            <p className={styles.tagEmpty}>No tags match "{search}"</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Empty state
 // ---------------------------------------------------------------------------
 
 function EmptyState({ query }) {
@@ -73,26 +149,35 @@ function EmptyState({ query }) {
 }
 
 // ---------------------------------------------------------------------------
-// Toolbar — random recipe button + made filter toggle
+// Toolbar
 // ---------------------------------------------------------------------------
 
-function ListToolbar({ onRandom, madeFilter, onToggleMadeFilter, hasMade }) {
+function ListToolbar({ onRandom, madeFilter, onToggleMadeFilter, hasMade, pinnedFilter, onTogglePinnedFilter, hasPinned, onOpenTags }) {
   return (
     <div className={styles.toolbar}>
-      <button
-        type="button"
-        className={styles.randomBtn}
-        onClick={onRandom}
-        title="Open a random recipe"
-      >
+      <button type="button" className={styles.randomBtn} onClick={onRandom} title="Open a random recipe">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <polyline points="16 3 21 3 21 8"/>
-          <line x1="4" y1="20" x2="21" y2="3"/>
-          <polyline points="21 16 21 21 16 21"/>
-          <line x1="15" y1="15" x2="21" y2="21"/>
+          <polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/>
+          <polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/>
         </svg>
         Random
       </button>
+      <button type="button" className={styles.randomBtn} onClick={onOpenTags} title="Browse all tags">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
+        </svg>
+        Tags
+      </button>
+      {hasPinned && (
+        <button
+          type="button"
+          className={`${styles.filterBtn} ${pinnedFilter ? styles.filterBtnPinned : ''}`}
+          onClick={onTogglePinnedFilter}
+          title={pinnedFilter ? 'Show all recipes' : 'Show only pinned'}
+        >
+          {pinnedFilter ? '★ Pinned' : '★ Pinned'}
+        </button>
+      )}
       {hasMade && (
         <button
           type="button"
@@ -111,16 +196,19 @@ function ListToolbar({ onRandom, madeFilter, onToggleMadeFilter, hasMade }) {
 // Component
 // ---------------------------------------------------------------------------
 
-export default function RecipeList({ onViewRecipe, searchQuery }) {
+export default function RecipeList({ onViewRecipe, searchQuery, onSearch }) {
   const deferredQuery = useDeferredValue(searchQuery || '');
   const isFiltering = (searchQuery || '') !== deferredQuery;
-  const [madeFilter, setMadeFilter] = useState('all'); // 'all' | 'made' | 'unmade'
-  const { madeSet } = useCookHistoryContext();
+  const [madeFilter, setMadeFilter] = useState('all');
+  const [pinnedFilter, setPinnedFilter] = useState(false);
+  const [tagBrowserOpen, setTagBrowserOpen] = useState(false);
+  const [collapsedSections, setCollapsedSections] = useState(loadCollapsed);
+  const { madeSet, pinnedSet } = useCookHistoryContext();
 
-  const hasMade = madeSet.size > 0;
+  const hasMade   = madeSet.size > 0;
+  const hasPinned = pinnedSet.size > 0;
 
   const handleRandom = () => {
-    // Pick from the currently filtered pool if a search is active; otherwise all real recipes.
     const pool = [];
     for (const recs of filtered.values()) {
       recs.forEach((r) => { if (!r.is_blank) pool.push(r); });
@@ -130,28 +218,40 @@ export default function RecipeList({ onViewRecipe, searchQuery }) {
     onViewRecipe(pick);
   };
 
-  const handleToggleMadeFilter = () => {
-    setMadeFilter((v) => v === 'all' ? 'made' : v === 'made' ? 'unmade' : 'all');
-  };
+  const handleToggleMadeFilter = () => setMadeFilter((v) => v === 'all' ? 'made' : v === 'made' ? 'unmade' : 'all');
+  const handleTogglePinnedFilter = () => setPinnedFilter((v) => !v);
+
+  const handleToggleCollapse = useCallback((key) => {
+    setCollapsedSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      saveCollapsed(next);
+      return next;
+    });
+  }, []);
+
+  const handleSelectTag = useCallback((tag) => {
+    onSearch?.(tag);
+  }, [onSearch]);
 
   const filtered = useMemo(() => {
     const q = deferredQuery.trim().toLowerCase();
-    // displayedBySection is intentionally excluded from deps — it is a module-level
-    // constant built at import time and never changes. React lint doesn't flag stable
-    // module references; adding it would only add noise to the dep array.
     const out = new Map();
     for (const [key, displayed] of displayedBySection) {
       let matches = q ? displayed.filter((r) => recipeMatchesQuery(r, q)) : displayed;
-      // Apply made/unmade filter — only filters real (non-blank) recipes.
       if (madeFilter === 'made') {
         matches = matches.filter((r) => r.is_blank || madeSet.has(r.name));
       } else if (madeFilter === 'unmade') {
         matches = matches.filter((r) => r.is_blank || !madeSet.has(r.name));
       }
+      if (pinnedFilter) {
+        matches = matches.filter((r) => r.is_blank || pinnedSet.has(r.name));
+      }
       if (matches.length > 0) out.set(key, matches);
     }
     return out;
-  }, [deferredQuery, madeFilter, madeSet]);
+  }, [deferredQuery, madeFilter, pinnedFilter, madeSet, pinnedSet]);
 
   const totalFiltered = useMemo(() => {
     let n = 0;
@@ -160,9 +260,7 @@ export default function RecipeList({ onViewRecipe, searchQuery }) {
   }, [filtered]);
 
   const q = deferredQuery.trim();
-  const noResults = (q || madeFilter !== 'all') && filtered.size === 0;
-  // Pass the raw query string to RecipeRow for name highlighting.
-  // Using deferredQuery (not searchQuery) keeps highlighting in sync with filtering.
+  const noResults = (q || madeFilter !== 'all' || pinnedFilter) && filtered.size === 0;
   const highlightQuery = q;
 
   return (
@@ -172,6 +270,10 @@ export default function RecipeList({ onViewRecipe, searchQuery }) {
         madeFilter={madeFilter}
         onToggleMadeFilter={handleToggleMadeFilter}
         hasMade={hasMade}
+        pinnedFilter={pinnedFilter}
+        onTogglePinnedFilter={handleTogglePinnedFilter}
+        hasPinned={hasPinned}
+        onOpenTags={() => setTagBrowserOpen(true)}
       />
       {q && !noResults && (
         <div className={styles.resultCount}>
@@ -179,16 +281,16 @@ export default function RecipeList({ onViewRecipe, searchQuery }) {
         </div>
       )}
       {noResults && (
-        q
-          ? <EmptyState query={q} />
-          : (
-            <div className={styles.emptyState}>
-              <p className={styles.emptyTitle}>
-                {madeFilter === 'made' ? 'No recipes marked as made yet.' : 'All recipes have been marked as made!'}
-              </p>
-              <p className={styles.emptyHint}>Use the ✓ buttons on any recipe to track what you've cooked.</p>
-            </div>
-          )
+        q ? <EmptyState query={q} /> : (
+          <div className={styles.emptyState}>
+            <p className={styles.emptyTitle}>
+              {pinnedFilter ? 'No pinned recipes.' : madeFilter === 'made' ? 'No recipes marked as made yet.' : 'All recipes have been marked as made!'}
+            </p>
+            <p className={styles.emptyHint}>
+              {pinnedFilter ? 'Use the ★ button on any recipe to pin it.' : 'Use the ✓ buttons on any recipe to track what you\'ve cooked.'}
+            </p>
+          </div>
+        )
       )}
       {SECTIONS.map((section) => {
         const displayed = filtered.get(section.key) || [];
@@ -201,9 +303,17 @@ export default function RecipeList({ onViewRecipe, searchQuery }) {
             onViewRecipe={onViewRecipe}
             hideSource={section.review}
             highlightQuery={highlightQuery}
+            collapsed={collapsedSections.has(section.key)}
+            onToggleCollapse={handleToggleCollapse}
           />
         );
       })}
+      {tagBrowserOpen && (
+        <TagBrowser
+          onSelectTag={handleSelectTag}
+          onClose={() => setTagBrowserOpen(false)}
+        />
+      )}
     </main>
   );
 }

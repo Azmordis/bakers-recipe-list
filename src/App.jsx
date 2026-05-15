@@ -13,6 +13,7 @@ import ShoppingList from './components/ShoppingList/ShoppingList.jsx';
 import { CookHistoryProvider } from './context/CookHistoryContext.jsx';
 import { useRecentlyViewed } from './hooks/useRecentlyViewed.js';
 import { useShoppingList } from './hooks/useShoppingList.js';
+import { useDarkMode } from './hooks/useDarkMode.js';
 import { scaleIngredientText } from './utils/scaleIngredient.js';
 
 function getParam(key) {
@@ -39,6 +40,7 @@ function AppInner() {
   const [searchQuery, setSearchQuery] = useState(() => getParam('q'));
   const searchBarRef = useRef(null);
   const [recentHistory, addToHistory, clearHistory] = useRecentlyViewed();
+  const [darkMode, toggleDark] = useDarkMode();
   const [listItems, addListItems, toggleListItem, removeListItem, clearChecked, clearAll] = useShoppingList();
 
   const handleViewRecipe = useCallback((recipe) => {
@@ -98,6 +100,8 @@ function AppInner() {
       <TopBar
         onMenuToggle={handleMenuToggle}
         onListToggle={handleListToggle}
+        darkMode={darkMode}
+        onToggleDark={toggleDark}
         listItemCount={uncheckedCount}
       />
       <UsdaKeyNotice />
@@ -109,7 +113,7 @@ function AppInner() {
         onClear={clearHistory}
         searchQuery={searchQuery}
       />
-      <RecipeList onViewRecipe={handleViewRecipe} searchQuery={searchQuery} />
+      <RecipeList onViewRecipe={handleViewRecipe} searchQuery={searchQuery} onSearch={handleSearch} />
       <ErrorBoundary key={selectedRecipe?.name ?? '__none__'}>
         <RecipeModal
           recipe={selectedRecipe}

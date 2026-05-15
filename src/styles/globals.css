@@ -100,7 +100,7 @@ main {
    Warm dark palette: deep navy background keeps the cookbook
    feel; amber and blue accents stay the same hue, just brighter.
    ============================================================ */
-@media (prefers-color-scheme: dark) {
+[data-theme="dark"] {
   :root {
     --bg: #141A22;
     --surface: #1C2430;

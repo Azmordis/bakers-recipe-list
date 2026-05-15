@@ -2,7 +2,6 @@ import { memo } from 'react';
 import { useCookHistoryContext } from '../../context/CookHistoryContext.jsx';
 import styles from './RecipeRow.module.css';
 
-// Highlights the first occurrence of `query` inside `text` using a <mark> element.
 function HighlightedText({ text, query }) {
   if (!query) return <>{text}</>;
   const lower = text.toLowerCase();
@@ -18,13 +17,15 @@ function HighlightedText({ text, query }) {
 }
 
 function RecipeRow({ recipe, onViewRecipe, hideSource, highlightQuery }) {
-  const { madeSet, toggleMade, cookLog } = useCookHistoryContext();
-  const isMade = madeSet.has(recipe.name);
+  const { madeSet, toggleMade, cookLog, pinnedSet, togglePinned } = useCookHistoryContext();
+  const isMade   = madeSet.has(recipe.name);
+  const isPinned = pinnedSet.has(recipe.name);
   const hasNotes = !!(cookLog[recipe.name]?.notes?.trim());
 
   const rowClass = [
     recipe.is_blank ? styles.blankRow : '',
-    isMade ? styles.madeRow : '',
+    isMade          ? styles.madeRow  : '',
+    isPinned        ? styles.pinnedRow : '',
   ].filter(Boolean).join(' ');
 
   const tags = recipe.tags?.length ? recipe.tags.join(' ') : '';
@@ -47,15 +48,24 @@ function RecipeRow({ recipe, onViewRecipe, hideSource, highlightQuery }) {
       {!hideSource && <td className={styles.recipeSource}>{recipe.source || ''}</td>}
       <td className={styles.actionCell}>
         {!recipe.is_blank && (
-          <button
-            type="button"
-            className={`${styles.madeBtn} ${isMade ? styles.madeBtnActive : ''}`}
-            onClick={() => toggleMade(recipe.name)}
-            aria-label={isMade ? 'Mark as not made' : 'Mark as made'}
-            title={isMade ? 'Unmark' : 'Made it!'}
-          >
-            {isMade ? '✓' : '○'}
-          </button>
+          <>
+            <button
+              type="button"
+              className={`${styles.pinBtn} ${isPinned ? styles.pinBtnActive : ''}`}
+              onClick={() => togglePinned(recipe.name)}
+              aria-label={isPinned ? 'Unpin recipe' : 'Pin recipe'}
+              title={isPinned ? 'Pinned — click to unpin' : 'Pin for later'}
+            >★</button>
+            <button
+              type="button"
+              className={`${styles.madeBtn} ${isMade ? styles.madeBtnActive : ''}`}
+              onClick={() => toggleMade(recipe.name)}
+              aria-label={isMade ? 'Mark as not made' : 'Mark as made'}
+              title={isMade ? 'Unmark' : 'Made it!'}
+            >
+              {isMade ? '✓' : '○'}
+            </button>
+          </>
         )}
         <button
           type="button"

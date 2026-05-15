@@ -124,3 +124,43 @@
   position: relative;
   top: -1px;
 }
+
+/* Subtle amber tint for pinned rows */
+.pinnedRow td {
+  background: rgba(239, 159, 39, 0.06);
+}
+.pinnedRow:hover td {
+  background: rgba(239, 159, 39, 0.11) !important;
+}
+
+/* Pin / star button */
+.pinBtn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 3px 6px;
+  margin-right: 5px;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  line-height: 1;
+  vertical-align: middle;
+  opacity: 0.5;
+}
+tr:hover .pinBtn {
+  opacity: 1;
+}
+.pinBtnActive {
+  color: var(--amber-dark);
+  border-color: var(--amber-dark);
+  background: rgba(239, 159, 39, 0.12);
+  opacity: 1 !important;
+}
+.pinBtnActive:hover {
+  background: rgba(239, 159, 39, 0.20);
+}
+
+@media (max-width: 480px) {
+  .pinBtn { padding: 3px 5px; font-size: 12px; margin-right: 3px; }
+}
