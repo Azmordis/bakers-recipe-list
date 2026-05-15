@@ -65,3 +65,50 @@
     display: none;
   }
 }
+
+/* Action button group (cart + hamburger) */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* Shopping list cart button */
+.listButton {
+  position: relative;
+  background: none;
+  border: none;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  border-radius: 6px;
+  color: var(--amber);
+  transition: background 0.15s;
+}
+.listButton:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Item count badge on the cart icon */
+.badge {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  background: var(--amber);
+  color: var(--navy);
+  font-size: 9px;
+  font-weight: 800;
+  border-radius: 8px;
+  min-width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  line-height: 1;
+}

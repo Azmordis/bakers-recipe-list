@@ -4,21 +4,13 @@ import { estimateServings } from '../../utils/estimateServings.js';
 import { useMacroEstimate } from '../../hooks/useMacroEstimate.js';
 import { parseIngredient } from '../../utils/parseIngredient.js';
 import { formatQuantity } from '../../utils/fractions.js';
+import { scaleIngredientText } from '../../utils/scaleIngredient.js';
 import { useFocusTrap } from '../../hooks/useFocusTrap.js';
+import { useCookHistoryContext } from '../../context/CookHistoryContext.jsx';
 
-// Lazy-load MacroCard so the USDA estimation bundle is excluded from the
-// initial paint — the list page loads and renders before any macro logic runs.
 const MacroCard = lazy(() => import('../MacroCard/MacroCard.jsx'));
 
-// ---------------------------------------------------------------------------
-// Module-scope constants
-// ---------------------------------------------------------------------------
-
-// Scale steps: defined here so the array is never re-allocated on render.
 const SCALE_STEPS = [0.25, 0.5, 0.75, 1, 1.5, 2, 3, 4];
-
-// Regex matching the leading numeric portion of an ingredient text line.
-const LEADING_QTY_RE = /^([\d½¼¾⅓⅔⅛⅜⅝⅞⅕⅖⅗⅘./\s]+)/;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -28,14 +20,11 @@ function isUrl(str) {
   return typeof str === 'string' && /^https?:\/\//i.test(str);
 }
 
-function scaleIngredientText(text, scale) {
-  if (scale === 1) return text;
-  const parsed = parseIngredient(text);
-  if (!parsed) return text;
-  const newQty = parsed.quantity * scale;
-  const qStr = formatQuantity(newQty);
-  const after = text.replace(LEADING_QTY_RE, '').trimStart();
-  return after ? `${qStr} ${after}` : qStr;
+
+function formatDate(iso) {
+  try {
+    return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  } catch { return ''; }
 }
 
 // ---------------------------------------------------------------------------
@@ -50,12 +39,7 @@ function MetaLine({ recipe, servingEstimate, onTagClick, scale, onScaleDown, onS
       {tags.map((tag, i) => (
         <span key={tag}>
           {i > 0 && <span className={styles.metaSep}> </span>}
-          <button
-            type="button"
-            className={styles.tagBtn}
-            onClick={() => onTagClick?.(tag)}
-            title={`Filter by ${tag}`}
-          >
+          <button type="button" className={styles.tagBtn} onClick={() => onTagClick?.(tag)} title={`Filter by ${tag}`}>
             {tag}
           </button>
         </span>
@@ -65,12 +49,8 @@ function MetaLine({ recipe, servingEstimate, onTagClick, scale, onScaleDown, onS
         <span>
           Source:{' '}
           {isUrl(recipe.source) ? (
-            <a href={recipe.source} target="_blank" rel="noreferrer noopener" className={styles.sourceLink}>
-              {recipe.source}
-            </a>
-          ) : (
-            recipe.source
-          )}
+            <a href={recipe.source} target="_blank" rel="noreferrer noopener" className={styles.sourceLink}>{recipe.source}</a>
+          ) : recipe.source}
         </span>
       ) : (
         <span>Original recipe</span>
@@ -92,8 +72,9 @@ function MetaLine({ recipe, servingEstimate, onTagClick, scale, onScaleDown, onS
   );
 }
 
-function Ingredients({ items, scale }) {
+function Ingredients({ items, scale, onAddToList }) {
   const [copied, setCopied] = useState(false);
+  const [added, setAdded] = useState(false);
   if (!items?.length) return null;
 
   const handleCopy = () => {
@@ -107,22 +88,44 @@ function Ingredients({ items, scale }) {
     }).catch(() => {});
   };
 
+  const handleAddToList = () => {
+    onAddToList?.(items, scale);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2000);
+  };
+
   return (
     <>
       <div className={styles.sectionRow}>
         <div className={styles.modalSectionTitle}>Ingredients</div>
-        <button
-          type="button"
-          className={`${styles.copyBtn} ${copied ? styles.copyBtnDone : ''}`}
-          onClick={handleCopy}
-          aria-label="Copy ingredients to clipboard"
-        >
-          {copied ? (
-            <><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Copied</>
-          ) : (
-            <><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy</>
+        <div className={styles.ingActions}>
+          {onAddToList && (
+            <button
+              type="button"
+              className={`${styles.listBtn} ${added ? styles.listBtnDone : ''}`}
+              onClick={handleAddToList}
+              aria-label="Add ingredients to shopping list"
+            >
+              {added ? (
+                <><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Added</>
+              ) : (
+                <><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg> List</>
+              )}
+            </button>
           )}
-        </button>
+          <button
+            type="button"
+            className={`${styles.copyBtn} ${copied ? styles.copyBtnDone : ''}`}
+            onClick={handleCopy}
+            aria-label="Copy ingredients to clipboard"
+          >
+            {copied ? (
+              <><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Copied</>
+            ) : (
+              <><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy</>
+            )}
+          </button>
+        </div>
       </div>
       <ul className={styles.ingList}>
         {items.map((ing, i) => (
@@ -163,11 +166,59 @@ function Instructions({ steps }) {
   );
 }
 
+// Cook log section — history summary + notes textarea
+function CookLogSection({ recipeName }) {
+  const { cookLog, updateNotes } = useCookHistoryContext();
+  const entry = cookLog[recipeName];
+  const [draft, setDraft] = useState(entry?.notes ?? '');
+
+  // Keep draft in sync if another tab updates localStorage (edge case)
+  useEffect(() => {
+    setDraft(cookLog[recipeName]?.notes ?? '');
+  }, [recipeName, cookLog]);
+
+  const handleBlur = () => {
+    const trimmed = draft.trim();
+    // Only write if value actually changed to avoid spurious localStorage writes.
+    if (trimmed !== (entry?.notes ?? '').trim()) {
+      updateNotes(recipeName, trimmed);
+    }
+  };
+
+  const cookCount = entry?.dates?.length ?? 0;
+  const lastCooked = entry?.dates?.length
+    ? formatDate(entry.dates[entry.dates.length - 1])
+    : null;
+
+  return (
+    <div className={styles.cookLogSection}>
+      <div className={styles.cookLogHeader}>
+        <div className={styles.modalSectionTitle} style={{ margin: 0, borderBottom: 'none', paddingBottom: 0 }}>My Notes</div>
+        {cookCount > 0 && (
+          <span className={styles.cookStat}>
+            Cooked {cookCount}×
+            {lastCooked && <> · Last {lastCooked}</>}
+          </span>
+        )}
+      </div>
+      <textarea
+        className={styles.notesArea}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={handleBlur}
+        placeholder="Your notes — substitutions, tweaks, how it went…"
+        rows={3}
+        aria-label="Recipe notes"
+      />
+    </div>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Main component
 // ---------------------------------------------------------------------------
 
-export default function RecipeModal({ recipe, onClose, onTagClick }) {
+export default function RecipeModal({ recipe, onClose, onTagClick, onAddToList }) {
   const titleId = useId();
   const [scale, setScale] = useState(1);
   const [shareCopied, setShareCopied] = useState(false);
@@ -176,7 +227,6 @@ export default function RecipeModal({ recipe, onClose, onTagClick }) {
   const servingEstimate = useMemo(() => recipe ? estimateServings(recipe) : null, [recipe]);
   const macroState = useMacroEstimate(recipe, servingEstimate);
 
-  // Trap Tab focus inside the modal card while a recipe is open.
   useFocusTrap(modalCardRef, !!recipe);
 
   useEffect(() => { setScale(1); }, [recipe]);
@@ -212,6 +262,10 @@ export default function RecipeModal({ recipe, onClose, onTagClick }) {
         setTimeout(() => setShareCopied(false), 2000);
       }).catch(() => {});
     }
+  };
+
+  const handleAddToList = (items, sc) => {
+    onAddToList?.(recipe.name, items, sc);
   };
 
   return (
@@ -258,11 +312,12 @@ export default function RecipeModal({ recipe, onClose, onTagClick }) {
             <div className={styles.comingSoon}>🍳 Recipe coming soon — this one is on the list!</div>
           ) : (
             <>
-              <Ingredients items={recipe.ingredients} scale={scale} />
+              <Ingredients items={recipe.ingredients} scale={scale} onAddToList={onAddToList ? handleAddToList : null} />
               <Instructions steps={recipe.instructions} />
               <Suspense fallback={null}>
                 <MacroCard {...macroState} />
               </Suspense>
+              <CookLogSection recipeName={recipe.name} />
             </>
           )}
         </div>

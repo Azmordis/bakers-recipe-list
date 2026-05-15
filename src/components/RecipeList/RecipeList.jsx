@@ -45,6 +45,7 @@ const allReal = recipes.filter((r) => !r.is_blank);
 function normalise(s) { return (s || '').toLowerCase(); }
 
 function recipeMatchesQuery(recipe, q) {
+  if (recipe.ingredients?.some((ing) => normalise(ing.text).includes(q))) return true;
   if (normalise(recipe.name).includes(q)) return true;
   if (recipe.tags?.some((t) => normalise(t).includes(q))) return true;
   if (normalise(recipe.source).includes(q)) return true;

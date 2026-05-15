@@ -9,8 +9,11 @@ import SearchBar from './components/SearchBar/SearchBar.jsx';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary.jsx';
 import RecentlyViewed from './components/RecentlyViewed/RecentlyViewed.jsx';
 import BackToTop from './components/BackToTop/BackToTop.jsx';
+import ShoppingList from './components/ShoppingList/ShoppingList.jsx';
 import { CookHistoryProvider } from './context/CookHistoryContext.jsx';
 import { useRecentlyViewed } from './hooks/useRecentlyViewed.js';
+import { useShoppingList } from './hooks/useShoppingList.js';
+import { scaleIngredientText } from './utils/scaleIngredient.js';
 
 function getParam(key) {
   try { return new URLSearchParams(window.location.search).get(key) || ''; }
@@ -32,9 +35,11 @@ function AppInner() {
     return name ? (recipes.find((r) => r.name === name) ?? null) : null;
   });
   const [menuOpen, setMenuOpen] = useState(false);
+  const [listOpen, setListOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState(() => getParam('q'));
   const searchBarRef = useRef(null);
   const [recentHistory, addToHistory, clearHistory] = useRecentlyViewed();
+  const [listItems, addListItems, toggleListItem, removeListItem, clearChecked, clearAll] = useShoppingList();
 
   const handleViewRecipe = useCallback((recipe) => {
     setSelectedRecipe(recipe);
@@ -49,6 +54,8 @@ function AppInner() {
 
   const handleMenuToggle = useCallback(() => setMenuOpen((v) => !v), []);
   const handleMenuClose  = useCallback(() => setMenuOpen(false), []);
+  const handleListToggle = useCallback(() => setListOpen((v) => !v), []);
+  const handleListClose  = useCallback(() => setListOpen(false), []);
 
   const handleSearch = useCallback((query) => {
     setSearchQuery(query);
@@ -60,8 +67,16 @@ function AppInner() {
     handleSearch(tag);
   }, [handleCloseModal, handleSearch]);
 
-  // "/" focuses the search bar when the modal is closed and focus isn't
-  // already inside an input/textarea.
+  // Called from RecipeModal's "List" button — adds scaled ingredients to shopping list.
+  const handleAddToList = useCallback((recipeName, ingredients, scale) => {
+    const texts = ingredients
+      .filter((ing) => ing.type === 'item')
+      .map((ing) => scaleIngredientText(ing.text, scale));
+    addListItems(recipeName, texts);
+    setListOpen(true);
+  }, [addListItems]);
+
+  // "/" focuses the search bar when the modal is closed.
   useEffect(() => {
     const onKey = (e) => {
       if (e.key !== '/') return;
@@ -75,10 +90,16 @@ function AppInner() {
     return () => document.removeEventListener('keydown', onKey);
   }, [selectedRecipe]);
 
+  const uncheckedCount = listItems.filter((it) => !it.checked).length;
+
   return (
     <ErrorBoundary>
       <BackToTop />
-      <TopBar onMenuToggle={handleMenuToggle} />
+      <TopBar
+        onMenuToggle={handleMenuToggle}
+        onListToggle={handleListToggle}
+        listItemCount={uncheckedCount}
+      />
       <UsdaKeyNotice />
       <TOCNav open={menuOpen} onClose={handleMenuClose} />
       <SearchBar ref={searchBarRef} value={searchQuery} onChange={handleSearch} />
@@ -89,16 +110,27 @@ function AppInner() {
         searchQuery={searchQuery}
       />
       <RecipeList onViewRecipe={handleViewRecipe} searchQuery={searchQuery} />
-      {/* key resets ErrorBoundary per recipe so one bad modal doesn't block others */}
       <ErrorBoundary key={selectedRecipe?.name ?? '__none__'}>
-        <RecipeModal recipe={selectedRecipe} onClose={handleCloseModal} onTagClick={handleTagClick} />
+        <RecipeModal
+          recipe={selectedRecipe}
+          onClose={handleCloseModal}
+          onTagClick={handleTagClick}
+          onAddToList={handleAddToList}
+        />
       </ErrorBoundary>
+      <ShoppingList
+        items={listItems}
+        open={listOpen}
+        onClose={handleListClose}
+        onToggle={toggleListItem}
+        onRemove={removeListItem}
+        onClearChecked={clearChecked}
+        onClearAll={clearAll}
+      />
     </ErrorBoundary>
   );
 }
 
-// CookHistoryProvider wraps the entire app so RecipeRow can useContext directly —
-// no prop drilling through RecipeList or SectionBlock, preserving their memos.
 export default function App() {
   return (
     <CookHistoryProvider>

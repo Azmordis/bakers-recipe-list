@@ -1,18 +1,33 @@
-// CookHistoryContext: provides { madeSet, toggleMade } to the entire tree.
-// RecipeRow reads from this context directly — no prop drilling through
-// RecipeList or SectionBlock, which means SectionBlock's memo is never
-// busted by a toggle (SectionBlock receives no madeSet prop at all).
-import { createContext, useContext, useMemo } from 'react';
+import { createContext, useCallback, useContext, useMemo } from 'react';
 import { useCookHistory } from '../hooks/useCookHistory.js';
+import { useCookLog } from '../hooks/useCookLog.js';
 
-const CookHistoryContext = createContext({ madeSet: new Set(), toggleMade: () => {} });
+const CookHistoryContext = createContext({
+  madeSet: new Set(),
+  toggleMade: () => {},
+  cookLog: {},
+  updateNotes: () => {},
+});
 
 export function CookHistoryProvider({ children }) {
-  const [madeSet, toggleMade] = useCookHistory();
-  // Memoize the context value so identity only changes when actual data changes,
-  // not on every parent re-render. toggleMade is stable (useCallback); madeSet
-  // is a new Set on each toggle as expected.
-  const value = useMemo(() => ({ madeSet, toggleMade }), [madeSet, toggleMade]);
+  const [madeSet, toggleMadeRaw] = useCookHistory();
+  const [cookLog, logCook, updateNotes] = useCookLog();
+
+  // Wrap toggleMade so marking a recipe as made also logs the date.
+  // Unmarking does NOT remove log entries — history is preserved.
+  const toggleMade = useCallback((name) => {
+    const wasAlreadyMade = madeSet.has(name);
+    toggleMadeRaw(name);
+    if (!wasAlreadyMade) {
+      logCook(name);
+    }
+  }, [madeSet, toggleMadeRaw, logCook]);
+
+  const value = useMemo(
+    () => ({ madeSet, toggleMade, cookLog, updateNotes }),
+    [madeSet, toggleMade, cookLog, updateNotes]
+  );
+
   return (
     <CookHistoryContext.Provider value={value}>
       {children}

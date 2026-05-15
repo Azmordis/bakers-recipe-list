@@ -364,3 +364,84 @@
 .shareBtnDone {
   color: #2a7a4a;
 }
+
+/* ---- Cook log / notes section ---- */
+.cookLogSection {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--card-divider);
+}
+
+.cookLogHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  gap: 10px;
+}
+
+.cookStat {
+  font-size: 11px;
+  color: var(--card-muted);
+  font-style: italic;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.notesArea {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.025);
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  color: var(--card-body);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  padding: 8px 10px;
+  resize: vertical;
+  transition: border-color 0.15s, background 0.15s;
+  min-height: 60px;
+}
+
+.notesArea::placeholder {
+  color: var(--card-muted);
+  opacity: 0.7;
+}
+
+.notesArea:focus {
+  outline: none;
+  border-color: var(--blue);
+  background: rgba(12, 68, 124, 0.03);
+}
+
+/* ---- Ingredient action buttons row (Copy + Add to list) ---- */
+.ingActions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Add to shopping list button — mirrors copyBtn style */
+.listBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 11px;
+  padding: 3px 8px;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  font-family: inherit;
+}
+.listBtn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--text);
+  border-color: var(--text-muted);
+}
+.listBtnDone {
+  color: #2a7a4a;
+  border-color: #2a7a4a;
+}

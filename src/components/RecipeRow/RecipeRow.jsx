@@ -18,10 +18,9 @@ function HighlightedText({ text, query }) {
 }
 
 function RecipeRow({ recipe, onViewRecipe, hideSource, highlightQuery }) {
-  // Reads directly from context — SectionBlock never receives madeSet as a prop,
-  // so SectionBlock's memo is never busted by a toggle.
-  const { madeSet, toggleMade } = useCookHistoryContext();
+  const { madeSet, toggleMade, cookLog } = useCookHistoryContext();
   const isMade = madeSet.has(recipe.name);
+  const hasNotes = !!(cookLog[recipe.name]?.notes?.trim());
 
   const rowClass = [
     recipe.is_blank ? styles.blankRow : '',
@@ -36,6 +35,13 @@ function RecipeRow({ recipe, onViewRecipe, hideSource, highlightQuery }) {
         {isMade && <span className={styles.madeDot} aria-label="Made">✓</span>}
         <HighlightedText text={recipe.name} query={highlightQuery} />
         {recipe.is_blank && <span className={styles.blankBadge}>coming soon</span>}
+        {hasNotes && (
+          <span className={styles.noteIcon} title="Has notes" aria-label="Has notes">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+            </svg>
+          </span>
+        )}
       </td>
       <td className={styles.recipeTags}>{tags}</td>
       {!hideSource && <td className={styles.recipeSource}>{recipe.source || ''}</td>}
