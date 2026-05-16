@@ -7,6 +7,7 @@ const CookHistoryContext = createContext({
   madeSet: new Set(),
   toggleMade: () => {},
   cookLog: {},
+  logCook: () => {},
   updateNotes: () => {},
   pinnedSet: new Set(),
   togglePinned: () => {},
@@ -25,8 +26,8 @@ export function CookHistoryProvider({ children }) {
   }, [madeSet, toggleMadeRaw, logCook]);
 
   const value = useMemo(
-    () => ({ madeSet, toggleMade, cookLog, updateNotes, pinnedSet, togglePinned }),
-    [madeSet, toggleMade, cookLog, updateNotes, pinnedSet, togglePinned]
+    () => ({ madeSet, toggleMade, cookLog, logCook, updateNotes, pinnedSet, togglePinned }),
+    [madeSet, toggleMade, cookLog, logCook, updateNotes, pinnedSet, togglePinned]
   );
 
   return (

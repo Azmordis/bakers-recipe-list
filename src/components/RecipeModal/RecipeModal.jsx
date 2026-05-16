@@ -7,6 +7,7 @@ import { formatQuantity } from '../../utils/fractions.js';
 import { scaleIngredientText } from '../../utils/scaleIngredient.js';
 import { useFocusTrap } from '../../hooks/useFocusTrap.js';
 import { useCookHistoryContext } from '../../context/CookHistoryContext.jsx';
+import { getEffectiveTags } from '../../utils/autoTags.js';
 
 const MacroCard = lazy(() => import('../MacroCard/MacroCard.jsx'));
 
@@ -40,7 +41,7 @@ function formatDate(iso) {
 // ---------------------------------------------------------------------------
 
 function MetaLine({ recipe, servingEstimate, onTagClick, scale, onScaleDown, onScaleUp }) {
-  const tags = recipe.tags?.length ? recipe.tags : [];
+  const tags = getEffectiveTags(recipe);
   const hasSource = recipe.source && recipe.source !== 'Original';
   return (
     <div className={styles.modalMeta}>
@@ -258,11 +259,12 @@ function Instructions({ steps }) {
   );
 }
 
-// Cook log section — history summary + notes textarea
+// Cook log section — history summary + notes textarea + manual log button
 function CookLogSection({ recipeName }) {
-  const { cookLog, updateNotes } = useCookHistoryContext();
+  const { cookLog, logCook, updateNotes } = useCookHistoryContext();
   const entry = cookLog[recipeName];
   const [draft, setDraft] = useState(entry?.notes ?? '');
+  const [loggedFlash, setLoggedFlash] = useState(false);
 
   // Keep draft in sync if another tab updates localStorage (edge case)
   useEffect(() => {
@@ -277,6 +279,12 @@ function CookLogSection({ recipeName }) {
     }
   };
 
+  const handleLogCook = () => {
+    logCook(recipeName);
+    setLoggedFlash(true);
+    setTimeout(() => setLoggedFlash(false), 2000);
+  };
+
   const cookCount = entry?.dates?.length ?? 0;
   const lastCooked = entry?.dates?.length
     ? formatDate(entry.dates[entry.dates.length - 1])
@@ -286,12 +294,26 @@ function CookLogSection({ recipeName }) {
     <div className={styles.cookLogSection}>
       <div className={styles.cookLogHeader}>
         <div className={styles.modalSectionTitle} style={{ margin: 0, borderBottom: 'none', paddingBottom: 0 }}>My Notes</div>
-        {cookCount > 0 && (
-          <span className={styles.cookStat}>
-            Cooked {cookCount}×
-            {lastCooked && <> · Last {lastCooked}</>}
-          </span>
-        )}
+        <div className={styles.cookLogRight}>
+          {cookCount > 0 && (
+            <span className={styles.cookStat}>
+              Cooked {cookCount}×
+              {lastCooked && <> · Last {lastCooked}</>}
+            </span>
+          )}
+          <button
+            type="button"
+            className={`${styles.logCookBtn} ${loggedFlash ? styles.logCookBtnDone : ''}`}
+            onClick={handleLogCook}
+            title="Record a cook session"
+          >
+            {loggedFlash ? (
+              <><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Logged</>
+            ) : (
+              <>+ Log cook</>
+            )}
+          </button>
+        </div>
       </div>
       <textarea
         className={styles.notesArea}

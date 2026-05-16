@@ -4,6 +4,7 @@ import { SECTIONS } from '../../data/sections.js';
 import { expandVersionedRecipe } from '../../data/expandVersions.js';
 import SectionBlock from '../SectionBlock/SectionBlock.jsx';
 import { useCookHistoryContext } from '../../context/CookHistoryContext.jsx';
+import { getEffectiveTags } from '../../utils/autoTags.js';
 import styles from './RecipeList.module.css';
 
 // ---------------------------------------------------------------------------
@@ -30,11 +31,11 @@ const displayedBySection = (() => {
   return map;
 })();
 
-// All tags with counts — computed once at module scope.
+// All tags (manual + auto-derived) with counts — computed once at module scope.
 const allTagCounts = (() => {
   const counts = new Map();
   recipes.forEach((r) => {
-    r.tags?.forEach((t) => counts.set(t, (counts.get(t) ?? 0) + 1));
+    getEffectiveTags(r).forEach((t) => counts.set(t, (counts.get(t) ?? 0) + 1));
   });
   // Sort by count desc, then alphabetically.
   return [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
@@ -49,13 +50,20 @@ function normalise(s) { return (s || '').toLowerCase(); }
 function recipeMatchesQuery(recipe, q) {
   if (recipe.ingredients?.some((ing) => normalise(ing.text).includes(q))) return true;
   if (normalise(recipe.name).includes(q)) return true;
-  if (recipe.tags?.some((t) => normalise(t).includes(q))) return true;
+  if (getEffectiveTags(recipe).some((t) => normalise(t).includes(q))) return true;
   if (normalise(recipe.source).includes(q)) return true;
   return false;
 }
 
 // sessionStorage key for collapsed sections
 const COLLAPSED_KEY = 'brl_collapsed_sections';
+
+// localStorage key for hide-blanks preference
+const HIDE_BLANKS_KEY = 'brl_hide_blanks';
+function loadHideBlanks() {
+  try { return localStorage.getItem(HIDE_BLANKS_KEY) === 'true'; }
+  catch { return false; }
+}
 
 function loadCollapsed() {
   try {
@@ -152,7 +160,7 @@ function EmptyState({ query }) {
 // Toolbar
 // ---------------------------------------------------------------------------
 
-function ListToolbar({ onRandom, madeFilter, onToggleMadeFilter, hasMade, pinnedFilter, onTogglePinnedFilter, hasPinned, onOpenTags }) {
+function ListToolbar({ onRandom, madeFilter, onToggleMadeFilter, hasMade, pinnedFilter, onTogglePinnedFilter, hasPinned, onOpenTags, hideBlanks, onToggleHideBlanks }) {
   return (
     <div className={styles.toolbar}>
       <button type="button" className={styles.randomBtn} onClick={onRandom} title="Open a random recipe">
@@ -188,6 +196,14 @@ function ListToolbar({ onRandom, madeFilter, onToggleMadeFilter, hasMade, pinned
           {madeFilter === 'made' ? '✓ Made' : madeFilter === 'unmade' ? '✗ Not made' : 'Filter: Made'}
         </button>
       )}
+      <button
+        type="button"
+        className={`${styles.filterBtn} ${hideBlanks ? styles.filterBtnActive : ''}`}
+        onClick={onToggleHideBlanks}
+        title={hideBlanks ? 'Show coming soon placeholders' : 'Hide coming soon placeholders'}
+      >
+        {hideBlanks ? '○ Blanks hidden' : '○ Coming soon'}
+      </button>
     </div>
   );
 }
@@ -201,6 +217,7 @@ export default function RecipeList({ onViewRecipe, searchQuery, onSearch }) {
   const isFiltering = (searchQuery || '') !== deferredQuery;
   const [madeFilter, setMadeFilter] = useState('all');
   const [pinnedFilter, setPinnedFilter] = useState(false);
+  const [hideBlanks, setHideBlanks] = useState(loadHideBlanks);
   const [tagBrowserOpen, setTagBrowserOpen] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState(loadCollapsed);
   const { madeSet, pinnedSet } = useCookHistoryContext();
@@ -220,6 +237,13 @@ export default function RecipeList({ onViewRecipe, searchQuery, onSearch }) {
 
   const handleToggleMadeFilter = () => setMadeFilter((v) => v === 'all' ? 'made' : v === 'made' ? 'unmade' : 'all');
   const handleTogglePinnedFilter = () => setPinnedFilter((v) => !v);
+  const handleToggleHideBlanks = useCallback(() => {
+    setHideBlanks((v) => {
+      const next = !v;
+      try { localStorage.setItem(HIDE_BLANKS_KEY, String(next)); } catch { /* ignore */ }
+      return next;
+    });
+  }, []);
 
   const handleToggleCollapse = useCallback((key) => {
     setCollapsedSections((prev) => {
@@ -248,10 +272,13 @@ export default function RecipeList({ onViewRecipe, searchQuery, onSearch }) {
       if (pinnedFilter) {
         matches = matches.filter((r) => r.is_blank || pinnedSet.has(r.name));
       }
+      if (hideBlanks) {
+        matches = matches.filter((r) => !r.is_blank);
+      }
       if (matches.length > 0) out.set(key, matches);
     }
     return out;
-  }, [deferredQuery, madeFilter, pinnedFilter, madeSet, pinnedSet]);
+  }, [deferredQuery, madeFilter, pinnedFilter, hideBlanks, madeSet, pinnedSet]);
 
   const totalFiltered = useMemo(() => {
     let n = 0;
@@ -274,6 +301,8 @@ export default function RecipeList({ onViewRecipe, searchQuery, onSearch }) {
         onTogglePinnedFilter={handleTogglePinnedFilter}
         hasPinned={hasPinned}
         onOpenTags={() => setTagBrowserOpen(true)}
+        hideBlanks={hideBlanks}
+        onToggleHideBlanks={handleToggleHideBlanks}
       />
       {q && !noResults && (
         <div className={styles.resultCount}>

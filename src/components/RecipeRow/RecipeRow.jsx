@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import { useCookHistoryContext } from '../../context/CookHistoryContext.jsx';
+import { getEffectiveTags } from '../../utils/autoTags.js';
 import styles from './RecipeRow.module.css';
 
 function HighlightedText({ text, query }) {
@@ -28,7 +29,7 @@ function RecipeRow({ recipe, onViewRecipe, hideSource, highlightQuery }) {
     isPinned        ? styles.pinnedRow : '',
   ].filter(Boolean).join(' ');
 
-  const tags = recipe.tags?.length ? recipe.tags.join(' ') : '';
+  const tags = getEffectiveTags(recipe).join(' ');
 
   return (
     <tr className={rowClass}>

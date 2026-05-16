@@ -384,12 +384,45 @@
   gap: 10px;
 }
 
+/* Right side of the cook log header: stat + button grouped */
+.cookLogRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 .cookStat {
   font-size: 11px;
   color: var(--card-muted);
   font-style: italic;
   white-space: nowrap;
-  flex-shrink: 0;
+}
+
+/* "Log cook" button — same family as copyBtn / listBtn */
+.logCookBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: 1px solid var(--card-border);
+  border-radius: 4px;
+  color: var(--card-muted);
+  cursor: pointer;
+  font-size: 11px;
+  padding: 3px 8px;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.logCookBtn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--card-body);
+  border-color: var(--card-muted);
+}
+.logCookBtnDone {
+  color: #2a7a4a;
+  border-color: #2a7a4a;
 }
 
 .notesArea {
