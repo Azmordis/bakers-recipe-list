@@ -35,6 +35,19 @@ const UNIT_ALIASES = {
   bunch: 'bunch', bunches: 'bunch',
   stalk: 'stalk', stalks: 'stalk',
   head: 'head', heads: 'head',
+  // count / container units
+  each: 'each',
+  piece: 'each', pieces: 'each',
+  sprig: 'each', sprigs: 'each',
+  stick: 'each', sticks: 'each',
+  scoop: 'each', scoops: 'each',
+  bag: 'each', bags: 'each',
+  sheet: 'each', sheets: 'each',
+  strip: 'each', strips: 'each',
+  block: 'each', blocks: 'each',
+  packet: 'each', packets: 'each',
+  bottle: 'each', bottles: 'each',
+  link: 'each', links: 'each',
 };
 
 // Whole-line skips: anything that matches one of these returns null.
@@ -45,8 +58,11 @@ const SKIP_PATTERNS = [
   /^water\b/i,
   /^cooking\s+spray$/i,
   /^non-?stick\s+spray$/i,
-  /^optional:\s*/i,
+  /^optional\b/i,
   /^for\s+(serving|garnish|topping)\b/i,
+  /^thumb-?sized\b/i,
+  /^reserved\b/i,
+  /.+\+\s*\d/,
 ];
 
 // Qualifier words to strip from the ingredient name once parsed.
@@ -148,8 +164,18 @@ function cleanName(s) {
 
 export function parseIngredient(text) {
   if (!text || typeof text !== 'string') return null;
-  const trimmed = text.trim();
+  let trimmed = text.trim();
   if (!trimmed) return null;
+
+  // Normalize range quantities: "8-16 oz tomato sauce" → "8 oz tomato sauce" (use lower bound).
+  trimmed = trimmed.replace(
+    /^(\d+(?:\/\d+)?(?:\.\d+)?)\s*-\s*\d+(?:\/\d+)?(?:\.\d+)?\s+/,
+    '$1 '
+  );
+
+  // Normalize percent-fat prefixes: "2% milk" → "milk".
+  trimmed = trimmed.replace(/^\d+%\s+/, '');
+
   if (SKIP_PATTERNS.some((re) => re.test(trimmed))) return null;
 
   // Form A: "Olive oil (1/4 cup)" — quantity in trailing parens

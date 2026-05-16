@@ -34,7 +34,7 @@
 export const USDA_API_KEY =
   import.meta.env.VITE_USDA_API_KEY || 'DEMO_KEY';
 const USDA_BASE = 'https://api.nal.usda.gov/fdc/v1';
-const CACHE_PREFIX = 'usda_v6_';
+const CACHE_PREFIX = 'usda_v7_';
 
 // One-time migration: wipe v1 cache keys so stale data doesn't persist
 // after scoring logic changes. Runs at module load, silent if nothing to remove.
@@ -42,7 +42,7 @@ try {
   const toRemove = [];
   for (let i = 0; i < sessionStorage.length; i++) {
     const k = sessionStorage.key(i);
-    if (k && (k.startsWith('usda_v1_') || k.startsWith('usda_v4_') || k.startsWith('usda_v5_'))) toRemove.push(k);
+    if (k && (k.startsWith('usda_v1_') || k.startsWith('usda_v4_') || k.startsWith('usda_v5_') || k.startsWith('usda_v6_'))) toRemove.push(k);
   }
   toRemove.forEach((k) => sessionStorage.removeItem(k));
 } catch { /* ignore */ }
@@ -296,7 +296,7 @@ const QUERY_ALIASES = {
   'sake': 'wine sake',
 
   // ── Broths & stocks ──────────────────────────────────────────────────────
-  'beef broth': 'beef broth bouillon',
+  'beef broth': 'beef broth ready-to-serve',
   'chicken broth': 'chicken broth ready-to-serve',
   'chicken stock': 'chicken broth ready-to-serve',
   'hot chicken stock': 'chicken broth ready-to-serve',
