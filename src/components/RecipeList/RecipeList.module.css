@@ -40,6 +40,37 @@
   margin: 0;
 }
 
+/* ---- Tab bar ---- */
+.tabBar {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--border);
+  margin-top: 4px;
+}
+
+.tabBtn {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 9px 18px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.tabBtn:hover {
+  color: var(--text);
+}
+.tabBtnActive {
+  color: var(--blue, #0c447c);
+  border-bottom-color: var(--blue, #0c447c);
+  font-weight: 600;
+}
+
 /* ---- List toolbar: random recipe + made filter ---- */
 .toolbar {
   display: flex;

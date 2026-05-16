@@ -22,6 +22,9 @@ const recipesBySection = (() => {
 
 const SECTION_BY_KEY = new Map(SECTIONS.map((s) => [s.key, s]));
 
+const mainSections   = SECTIONS.filter((s) => !s.review);
+const reviewSections = SECTIONS.filter((s) => !!s.review);
+
 const displayedBySection = (() => {
   const map = new Map();
   for (const [key, recs] of recipesBySection) {
@@ -215,6 +218,7 @@ function ListToolbar({ onRandom, madeFilter, onToggleMadeFilter, hasMade, pinned
 export default function RecipeList({ onViewRecipe, searchQuery, onSearch }) {
   const deferredQuery = useDeferredValue(searchQuery || '');
   const isFiltering = (searchQuery || '') !== deferredQuery;
+  const [activeTab, setActiveTab] = useState('recipes');
   const [madeFilter, setMadeFilter] = useState('all');
   const [pinnedFilter, setPinnedFilter] = useState(false);
   const [hideBlanks, setHideBlanks] = useState(loadHideBlanks);
@@ -261,8 +265,10 @@ export default function RecipeList({ onViewRecipe, searchQuery, onSearch }) {
 
   const filtered = useMemo(() => {
     const q = deferredQuery.trim().toLowerCase();
+    const sectionsToSearch = activeTab === 'recipes' ? mainSections : reviewSections;
     const out = new Map();
-    for (const [key, displayed] of displayedBySection) {
+    for (const section of sectionsToSearch) {
+      const displayed = displayedBySection.get(section.key) || [];
       let matches = q ? displayed.filter((r) => recipeMatchesQuery(r, q)) : displayed;
       if (madeFilter === 'made') {
         matches = matches.filter((r) => r.is_blank || madeSet.has(r.name));
@@ -275,10 +281,10 @@ export default function RecipeList({ onViewRecipe, searchQuery, onSearch }) {
       if (hideBlanks) {
         matches = matches.filter((r) => !r.is_blank);
       }
-      if (matches.length > 0) out.set(key, matches);
+      if (matches.length > 0) out.set(section.key, matches);
     }
     return out;
-  }, [deferredQuery, madeFilter, pinnedFilter, hideBlanks, madeSet, pinnedSet]);
+  }, [deferredQuery, madeFilter, pinnedFilter, hideBlanks, madeSet, pinnedSet, activeTab]);
 
   const totalFiltered = useMemo(() => {
     let n = 0;
@@ -292,6 +298,22 @@ export default function RecipeList({ onViewRecipe, searchQuery, onSearch }) {
 
   return (
     <main className={isFiltering ? styles.filtering : ''}>
+      <div className={styles.tabBar}>
+        <button
+          type="button"
+          className={`${styles.tabBtn} ${activeTab === 'recipes' ? styles.tabBtnActive : ''}`}
+          onClick={() => setActiveTab('recipes')}
+        >
+          Recipes
+        </button>
+        <button
+          type="button"
+          className={`${styles.tabBtn} ${activeTab === 'review' ? styles.tabBtnActive : ''}`}
+          onClick={() => setActiveTab('review')}
+        >
+          For Review
+        </button>
+      </div>
       <ListToolbar
         onRandom={handleRandom}
         madeFilter={madeFilter}
@@ -321,7 +343,7 @@ export default function RecipeList({ onViewRecipe, searchQuery, onSearch }) {
           </div>
         )
       )}
-      {SECTIONS.map((section) => {
+      {(activeTab === 'recipes' ? mainSections : reviewSections).map((section) => {
         const displayed = filtered.get(section.key) || [];
         if (displayed.length === 0) return null;
         return (

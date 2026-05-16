@@ -3,7 +3,8 @@
     "description": "Verified USDA per-100g macros (Foundation Foods preferred, SR Legacy otherwise). Values bypass the USDA text search for known-good ingredients — no API call made for these entries. Add new entries here when a new ingredient is confirmed via live USDA lookup. All values per 100g edible portion, raw unless otherwise noted.",
     "fields": "calories / protein / fat / carbs / fiber — all per 100g",
     "cache_note": "Bump CACHE_PREFIX in fetchNutrition.js after editing this file so stale sessions pick up the new values.",
-    "last_updated": "2026-05-16"
+    "last_updated": "2026-05-16",
+    "entry_count": 138
   },
 
   "PROTEINS": "— raw per 100g edible portion —",
