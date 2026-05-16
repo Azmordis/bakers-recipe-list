@@ -44,7 +44,23 @@ const SPICY_NEEDLES = [
   'scorpion pepper', 'carolina reaper',
 ];
 
+// Substrings that indicate a line is broth/stock rather than the protein itself.
+// Used to suppress false positives like "chicken broth" triggering #chicken.
+const BROTH_WORDS = ['broth', 'stock', 'bouillon', 'base', 'powder', 'seasoning'];
+
+// Returns true if the ingredient line contains any of the needles AND at least
+// one matching line is NOT a broth/stock/powder usage.
+// ingLines: string[] of lowercased individual ingredient texts.
+function hasProtein(ingLines, needles) {
+  return needles.some((needle) =>
+    ingLines.some((line) =>
+      line.includes(needle) && !BROTH_WORDS.some((w) => line.includes(w))
+    )
+  );
+}
+
 // Ingredient substrings for protein tags.
+// Matching is per-line with broth exclusion (see hasProtein above).
 const PROTEIN_RULES = [
   { needles: ['chicken', 'poultry'],                                                   tag: '#chicken' },
   { needles: ['ground beef', 'beef', 'steak', 'brisket', 'chuck', 'short rib'],       tag: '#beef'    },
@@ -68,15 +84,17 @@ export function getAutoTags(recipe) {
   if (sectionTags) sectionTags.forEach((t) => result.add(t));
 
   // ── 2. Ingredient-derived tags ───────────────────────────────────────────
-  const ingText = recipe.ingredients
+  const ingLines = recipe.ingredients
     ?.filter((i) => i.type === 'item')
-    .map((i) => i.text.toLowerCase())
-    .join(' ') ?? '';
+    .map((i) => i.text.toLowerCase()) ?? [];
 
+  // #spicy: flat match is fine — "chipotle powder" or "cayenne" in any context = spicy
+  const ingText = ingLines.join(' ');
   if (SPICY_NEEDLES.some((n) => ingText.includes(n))) result.add('#spicy');
 
+  // Protein tags: per-line match with broth/stock exclusion
   for (const { needles, tag } of PROTEIN_RULES) {
-    if (needles.some((n) => ingText.includes(n))) result.add(tag);
+    if (hasProtein(ingLines, needles)) result.add(tag);
   }
 
   // ── 3. Remove tags already set manually (dedup) ──────────────────────────
