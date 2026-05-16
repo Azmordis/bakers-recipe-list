@@ -31,6 +31,8 @@
 //   1005 Carbohydrate, by difference (G)
 //   1079 Fiber, total dietary (G)
 
+import OVERRIDES from '../data/nutritionOverrides.json';
+
 export const USDA_API_KEY =
   import.meta.env.VITE_USDA_API_KEY || 'DEMO_KEY';
 const USDA_BASE = 'https://api.nal.usda.gov/fdc/v1';
@@ -427,6 +429,16 @@ export async function fetchNutrition(ingredientName, signal) {
   // Cache: undefined = never seen, null = USDA returned no foods (real miss)
   const cached = readCache(key);
   if (cached !== undefined) return cached;
+
+  // Override file: pre-verified USDA values bypass the API entirely.
+  // Check the exact key, then the QUERY_ALIASES target as a fallback key.
+  const overrideKey = OVERRIDES[key] ? key : (QUERY_ALIASES[key] && OVERRIDES[QUERY_ALIASES[key]] ? QUERY_ALIASES[key] : null);
+  if (overrideKey) {
+    const ov = OVERRIDES[overrideKey];
+    const macros = { calories: ov.calories, protein: ov.protein, fat: ov.fat, carbs: ov.carbs, fiber: ov.fiber };
+    writeCache(key, macros);
+    return macros;
+  }
 
   // Once we've been 429d this session, stop hammering — every call will fail
   if (rateLimited) return null;
