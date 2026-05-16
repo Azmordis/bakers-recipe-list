@@ -29,7 +29,32 @@ const BASE = {
 
 // Per-cup weight overrides for solids (matched against ingredient name substring).
 // Order matters — more specific matches first.
+// Vegetable/produce densities sourced from USDA cup-to-gram reference data.
 const CUP_OVERRIDES = [
+  // --- Vegetables & produce (were defaulting to 240g/cup = water = wrong) ---
+  ['potato', 150],           // diced raw potato ~150g/cup
+  ['sweet potato', 133],     // diced raw
+  ['carrot', 128],           // sliced/diced raw
+  ['bell pepper', 149],      // chopped raw
+  ['onion', 160],            // diced/chopped raw
+  ['celery', 100],           // diced raw
+  ['zucchini', 124],         // sliced/diced
+  ['mushroom', 70],          // sliced raw (very airy)
+  ['spinach', 30],           // raw leaves (very light)
+  ['kale', 67],              // chopped raw
+  ['cabbage', 89],           // shredded raw
+  ['corn', 154],             // kernels
+  ['peas', 145],             // fresh/frozen
+  ['green bean', 110],       // chopped
+  ['broccoli', 91],          // chopped raw
+  ['cauliflower', 107],      // chopped raw
+  ['tomato', 180],           // chopped
+  ['cucumber', 119],         // sliced
+  ['apple', 125],            // diced
+  ['strawberr', 152],        // sliced
+  ['blueberr', 148],
+  ['ground meat', 230],      // cooked crumbled ground beef/pork (denser)
+  // --- Pantry staples ---
   ['brown sugar', 220],
   ['powdered sugar', 120],
   ['confectioners', 120],

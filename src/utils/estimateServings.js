@@ -67,20 +67,25 @@ function findExplicitYield(recipe) {
 }
 
 // Look at ingredient text for a primary-protein weight, return total grams (approx).
+// Handles both standard format ("1 lb chicken") and paren-amount format ("Chicken (1 lb)").
 function findProteinWeight(recipe) {
+  // Combined pattern: optional leading digits+unit OR trailing (digits unit)
+  const QTY_PAT = '[\\d./\\s½¼¾⅓⅔⅛⅜⅝⅞⅕⅖⅗⅘]+';
+  const lbRe  = new RegExp(`(?:^|\\()\\s*(${QTY_PAT})\\s*(?:lb|lbs|pound|pounds)\\b`, 'i');
+  const ozRe  = new RegExp(`(?:^|\\()\\s*(${QTY_PAT})\\s*(?:oz|ounce|ounces)\\b`, 'i');
   for (const ing of recipe.ingredients || []) {
     if (ing.type === 'section') continue;
     const text = (ing.text || '').toLowerCase();
     if (!PROTEIN_KEYWORDS.some((k) => text.includes(k))) continue;
-    const lbMatch = text.match(/^([\d./\s½¼¾⅓⅔⅛⅜⅝⅞⅕⅖⅗⅘]+)\s*(?:lb|lbs|pound|pounds)\b/);
+    const lbMatch = text.match(lbRe);
     if (lbMatch) {
       const q = parseQuantityStr(lbMatch[1].trim());
-      if (!isNaN(q)) return q * 453.6;
+      if (!isNaN(q) && q > 0) return q * 453.6;
     }
-    const ozMatch = text.match(/^([\d./\s½¼¾⅓⅔⅛⅜⅝⅞⅕⅖⅗⅘]+)\s*(?:oz|ounce|ounces)\b/);
+    const ozMatch = text.match(ozRe);
     if (ozMatch) {
       const q = parseQuantityStr(ozMatch[1].trim());
-      if (!isNaN(q)) return q * 28.35;
+      if (!isNaN(q) && q > 0) return q * 28.35;
     }
   }
   return null;

@@ -83,9 +83,8 @@ main {
   }
 
   [data-print-modal] {
-    position: fixed;
-    top: 0;
-    left: 0;
+    /* Must be static/relative — fixed elements repeat on every printed page */
+    position: static !important;
     width: 100%;
     box-shadow: none !important;
     border: none !important;

@@ -24,7 +24,8 @@
 //
 // === NUTRIENT IDs ===
 // Verified against a live USDA response (chicken breast):
-//   1008 Energy (KCAL)
+//   1008 Energy (KCAL) — NOTE: omitted in many Foundation Foods /search responses;
+//        extractMacros falls back to Atwater (protein×4 + fat×9 + carbs×4) when 0.
 //   1003 Protein (G)
 //   1004 Total lipid / fat (G)
 //   1005 Carbohydrate, by difference (G)
@@ -33,7 +34,7 @@
 export const USDA_API_KEY =
   import.meta.env.VITE_USDA_API_KEY || 'DEMO_KEY';
 const USDA_BASE = 'https://api.nal.usda.gov/fdc/v1';
-const CACHE_PREFIX = 'usda_v3_';
+const CACHE_PREFIX = 'usda_v5_';
 
 // One-time migration: wipe v1 cache keys so stale data doesn't persist
 // after scoring logic changes. Runs at module load, silent if nothing to remove.
@@ -41,7 +42,7 @@ try {
   const toRemove = [];
   for (let i = 0; i < sessionStorage.length; i++) {
     const k = sessionStorage.key(i);
-    if (k && k.startsWith('usda_v1_')) toRemove.push(k);
+    if (k && (k.startsWith('usda_v1_') || k.startsWith('usda_v4_'))) toRemove.push(k);
   }
   toRemove.forEach((k) => sessionStorage.removeItem(k));
 } catch { /* ignore */ }
@@ -56,25 +57,35 @@ function extractMacros(food) {
     const hit = food.foodNutrients?.find((n) => n.nutrientId === id);
     return hit ? hit.value : 0;
   };
-  return {
+  const macros = {
     calories: find(1008),
     protein: find(1003),
     fat: find(1004),
     carbs: find(1005),
     fiber: find(1079),
   };
+  // Many Foundation Foods entries omit nutrientId 1008 from the /foods/search
+  // response (energy is computed server-side via Atwater factors and not always
+  // returned inline). Fall back to Atwater when calories are zero but other
+  // macros are present: cal = protein×4 + fat×9 + carbs×4.
+  if (macros.calories === 0 && (macros.protein > 0 || macros.fat > 0 || macros.carbs > 0)) {
+    macros.calories = Math.round(macros.protein * 4 + macros.fat * 9 + macros.carbs * 4);
+  }
+  return macros;
 }
 
 // Score a USDA result. Lower is better. We prefer:
-//   - Foundation > SR Legacy
-//   - shorter descriptions (simpler = more generic = more accurate)
-//   - cooked state for grains/legumes (pasta, rice, noodles, beans, lentils)
-//     since recipes measure them dry but eat them cooked (same total carbs,
-//     but cooked weight per serving is what ends up on the plate)
+//   - Foundation > SR Legacy (Foundation entries are more carefully curated)
+//   - shorter descriptions (simpler name = more generic = fewer wrong matches)
+//   - raw/whole-food entries for ingredients listed at their raw/as-purchased weight
 //   - descriptions that don't contain "breaded", "with sauce", "frozen", etc.
-const PREFER_COOKED = ['pasta', 'noodle', 'spaghetti', 'penne', 'fettuccine', 'linguine',
-  'macaroni', 'rotini', 'rigatoni', 'farfalle', 'rice', 'lentil', 'bean', 'chickpea',
-  'couscous', 'quinoa', 'barley', 'bulgur'];
+//
+// NOTE on pasta/rice/grains: The KB (module-02) specifies using DRY weight with
+// DRY FDC entries for these ingredients. Do NOT prefer cooked entries — recipes
+// list raw/dry amounts and carbs don't change on cooking (only water is added).
+//
+// NOTE on potato: prefer "flesh and skin" raw entry; penalise starch/flour/chips
+// which share the word "potato" but have 3-5× the carb density.
 
 function scoreResult(food, queryName) {
   let score = (food.description || '').length;
@@ -83,17 +94,31 @@ function scoreResult(food, queryName) {
   const qLower = (queryName || '').toLowerCase();
 
   // Hard penalties — skip these wherever possible
-  const penaltyWords = ['breaded', 'in oil', 'with sauce', 'with gravy', 'frozen', 'canned',
-    'flavored', 'sweetened', 'restaurant', 'commercial', 'fast food'];
+  const penaltyWords = ['breaded', 'in oil', 'with sauce', 'with gravy', 'frozen',
+    'flavored', 'sweetened', 'restaurant', 'commercial', 'fast food', 'snack',
+    // Processed deli/lunchmeat entries share ingredient names (e.g. "Lunchmeat,
+    // chicken breast") but have wildly different macros from raw whole-food cuts.
+    'lunchmeat', 'lunch meat', 'deli'];
   for (const w of penaltyWords) {
     if (desc.includes(w)) score += 60;
   }
 
-  // For grains/legumes prefer the cooked entry (matches the served portion)
-  const wantsCooked = PREFER_COOKED.some((k) => qLower.includes(k));
-  if (wantsCooked) {
-    if (desc.includes('cooked')) score -= 40;
-    if (desc.includes('dry') || desc.includes('unenriched') || desc.includes('uncooked')) score += 30;
+  // Skin-only cuts (e.g. "Chicken, skin (drumsticks and thighs)") have 40-50g fat/100g
+  // vs. ~8g for boneless meat. Penalise hard when description identifies skin as the
+  // primary ingredient component (", skin (") rather than a skin-on whole cut.
+  if (/,\s*skin\s*\(/.test(desc)) score += 80;
+
+  // Processed-form penalty: when the query is a plain whole food, penalise USDA
+  // entries that are a heavily processed derivative (starch, flour, chips, flakes,
+  // dehydrated, or extracted oil) which share the ingredient name but have wildly
+  // different macros.
+  const processedForms = ['starch', 'flour', 'chips', 'flakes', 'dehydrated', 'powder',
+    'instant', 'mix', 'dried', 'granules', 'oil'];
+  const isPlainQuery = !processedForms.some((p) => qLower.includes(p));
+  if (isPlainQuery) {
+    for (const p of processedForms) {
+      if (desc.includes(p)) { score += 70; break; }
+    }
   }
 
   return score;
