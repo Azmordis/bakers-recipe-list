@@ -108,6 +108,8 @@ const CUP_OVERRIDES = [
 ];
 
 // Per-piece weight estimates for "each"-unit items (e.g. "1 egg").
+// ORDER MATTERS: more-specific needles must come before shorter substrings
+// (e.g. 'chicken breast' before 'chicken', 'asian pear' before 'pear').
 const EACH_OVERRIDES = [
   ['egg', 50],
   ['onion', 110],
@@ -115,15 +117,27 @@ const EACH_OVERRIDES = [
   ['lemon', 60],         // lemon juice ~3 tbsp = 45ml; whole lemon ~58g of usable
   ['lime', 44],
   ['orange', 130],
+  // chicken cuts — specific before generic 'chicken'
+  ['chicken breast', 150],
+  ['chicken thigh', 100],
+  ['chicken drumstick', 80],
+  ['chicken wing', 90],
+  ['chicken', 1500],     // whole chicken for soup/roast ~1.5 kg
   ['apple', 180],
   ['banana', 120],
   ['avocado', 150],
+  // pears — specific before generic 'pear'
+  ['asian pear', 200],
+  ['pear', 180],
   ['tomato', 120],
   ['carrot', 60],
   ['celery stalk', 40],
   ['potato', 200],
   ['bell pepper', 120],
-  ['pepper', 30],         // catch-all for chiles, etc.
+  ['jalapeño', 20],      // medium jalapeño ~20g deseeded
+  ['jalapeno', 20],
+  ['pepper', 30],        // catch-all for chiles, etc.
+  ['bay leaf', 1],       // negligible weight; included for completeness
   ['cucumber', 300],
   ['zucchini', 200],
 ];

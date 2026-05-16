@@ -119,6 +119,12 @@
   "beef broth":       { "calories": 6,   "protein": 0.64,  "fat": 0.21,  "carbs": 0.44,  "fiber": 0,   "_src": "SR Legacy — Broth, beef, ready-to-serve" },
   "vegetable broth":  { "calories": 7,   "protein": 0.17,  "fat": 0.11,  "carbs": 1.4,   "fiber": 0.1, "_src": "SR Legacy — Broth, vegetable, ready-to-serve" },
 
+  "WATER_MISC": "— zero-calorie or near-zero —",
+
+  "water":      { "calories": 0,   "protein": 0,    "fat": 0,    "carbs": 0,    "fiber": 0,   "_src": "Water — no caloric value; override prevents wrong USDA match (water spinach)" },
+  "vinegar":    { "calories": 21,  "protein": 0,    "fat": 0,    "carbs": 0.04, "fiber": 0,   "_src": "SR Legacy — Vinegar, distilled" },
+  "hot sauce":  { "calories": 19,  "protein": 0.86, "fat": 0.17, "carbs": 4.49, "fiber": 0.9, "_src": "SR Legacy — Sauce, hot chile, chili, mature red" },
+
   "SPICES": "— per 100g dry (used in small amounts; impact per tsp is ~2–5 kcal for most) —",
 
   "salt":             { "calories": 0,   "protein": 0,     "fat": 0,     "carbs": 0,     "fiber": 0,   "_src": "SR Legacy — Salt, table" },
@@ -157,6 +163,19 @@
   "chili flakes":     { "calories": 318, "protein": 12.0,  "fat": 17.3,  "carbs": 56.6,  "fiber": 27.2,"_src": "SR Legacy — Spices, pepper, red or cayenne" },
   "red pepper":       { "calories": 318, "protein": 12.0,  "fat": 17.3,  "carbs": 56.6,  "fiber": 27.2,"_src": "SR Legacy — Spices, pepper, red or cayenne" },
   "ground ginger":    { "calories": 335, "protein": 8.98,  "fat": 4.24,  "carbs": 71.6,  "fiber": 14.1,"_src": "SR Legacy — Spices, ginger, ground" },
+  "dill weed":        { "calories": 253, "protein": 19.7,  "fat": 4.36,  "carbs": 55.8,  "fiber": 13.6,"_src": "SR Legacy — Spices, dill weed, dried" },
+
+  "BEEF_MISC": "— beef cuts beyond ground beef —",
+
+  "beef":             { "calories": 246, "protein": 17.0,  "fat": 20.0,  "carbs": 0,     "fiber": 0,   "_src": "SR Legacy — Beef, chuck, arm pot roast, separable lean and fat, all grades, raw" },
+  "beef chunks":      { "calories": 246, "protein": 17.0,  "fat": 20.0,  "carbs": 0,     "fiber": 0,   "_src": "SR Legacy — Beef, chuck, arm pot roast (stew meat proxy), raw" },
+  "stew beef":        { "calories": 246, "protein": 17.0,  "fat": 20.0,  "carbs": 0,     "fiber": 0,   "_src": "SR Legacy — Beef, chuck, arm pot roast, raw" },
+  "beef cubes":       { "calories": 246, "protein": 17.0,  "fat": 20.0,  "carbs": 0,     "fiber": 0,   "_src": "SR Legacy — Beef, chuck, arm pot roast, raw" },
+
+  "FRUIT": "— raw per 100g —",
+
+  "asian pear":       { "calories": 42,  "protein": 0.5,   "fat": 0.23,  "carbs": 10.6,  "fiber": 3.6, "_src": "SR Legacy — Pears, asian, raw" },
+  "pear":             { "calories": 58,  "protein": 0.38,  "fat": 0.12,  "carbs": 15.5,  "fiber": 3.1, "_src": "SR Legacy — Pears, raw" },
 
   "BAKING_MISC": "— per 100g —",
 
