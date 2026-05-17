@@ -34,11 +34,11 @@ export default function MacroCard({ status, macros, matchedCount, totalCount }) 
 
   if (status === 'done' && macros) {
     const stats = [
-      { value: `~${macros.calories}`, label: 'cal' },
-      { value: `~${macros.protein}g`, label: 'protein' },
-      { value: `~${macros.fat}g`, label: 'fat' },
-      { value: `~${macros.carbs}g`, label: 'carbs' },
-      { value: `~${macros.fiber}g`, label: 'fiber' },
+      { value: `${macros.calories}`, label: 'cal' },
+      { value: `${macros.protein}g`, label: 'protein' },
+      { value: `${macros.fat}g`, label: 'fat' },
+      { value: `${macros.carbs}g`, label: 'carbs' },
+      { value: `${macros.fiber}g`, label: 'fiber' },
     ];
     const matchPct = totalCount ? matchedCount / totalCount : 1;
     const showPartialNote = matchPct < 0.7;

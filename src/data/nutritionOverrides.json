@@ -4,7 +4,7 @@
     "fields": "calories / protein / fat / carbs / fiber — all per 100g",
     "cache_note": "Bump CACHE_PREFIX in fetchNutrition.js after editing this file so stale sessions pick up the new values.",
     "last_updated": "2026-05-16",
-    "entry_count": 138
+    "entry_count": 140
   },
 
   "PROTEINS": "— raw per 100g edible portion —",
@@ -16,6 +16,8 @@
   "chicken breasts":  { "calories": 107, "protein": 22.5,  "fat": 1.93,  "carbs": 0,     "fiber": 0,   "_src": "Foundation — Chicken, breast, boneless, skinless, raw" },
   "chicken breast":   { "calories": 107, "protein": 22.5,  "fat": 1.93,  "carbs": 0,     "fiber": 0,   "_src": "Foundation — Chicken, breast, boneless, skinless, raw" },
   "chicken":          { "calories": 107, "protein": 22.5,  "fat": 1.93,  "carbs": 0,     "fiber": 0,   "_src": "Foundation — Chicken, breast, boneless, skinless, raw" },
+  "chicken drumsticks": { "calories": 172, "protein": 17.4, "fat": 11.2,  "carbs": 0,     "fiber": 0,   "_src": "SR Legacy — Chicken, broilers or fryers, drumstick, meat and skin, raw (edible portion)" },
+  "chicken drumstick":  { "calories": 172, "protein": 17.4, "fat": 11.2,  "carbs": 0,     "fiber": 0,   "_src": "SR Legacy — Chicken, broilers or fryers, drumstick, meat and skin, raw (edible portion)" },
   "cooked chicken":   { "calories": 165, "protein": 31.0,  "fat": 3.6,   "carbs": 0,     "fiber": 0,   "_src": "SR Legacy — Chicken, broilers, breast, cooked, roasted" },
   "pork shoulder":    { "calories": 186, "protein": 17.4,  "fat": 12.4,  "carbs": 0,     "fiber": 0,   "_src": "SR Legacy — Pork, fresh, shoulder, Boston butt, blade, raw" },
   "pork":             { "calories": 186, "protein": 17.4,  "fat": 12.4,  "carbs": 0,     "fiber": 0,   "_src": "SR Legacy — Pork, fresh, shoulder, Boston butt, blade, raw" },
