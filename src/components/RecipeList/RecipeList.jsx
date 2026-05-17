@@ -143,7 +143,7 @@ function TagBrowser({ onSelectTag, onClose }) {
 // Empty state
 // ---------------------------------------------------------------------------
 
-function EmptyState({ query }) {
+function EmptyState({ query, onClear }) {
   return (
     <div className={styles.emptyState}>
       <svg className={styles.emptyIllustration} viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -155,6 +155,11 @@ function EmptyState({ query }) {
       </svg>
       <p className={styles.emptyTitle}>Nothing found for <strong>"{query}"</strong></p>
       <p className={styles.emptyHint}>Try a different name, tag, or cuisine type.</p>
+      {onClear && (
+        <button type="button" className={styles.clearFilterBtn} onClick={onClear}>
+          × Clear filter
+        </button>
+      )}
     </div>
   );
 }
@@ -329,10 +334,17 @@ export default function RecipeList({ onViewRecipe, searchQuery, onSearch }) {
       {q && !noResults && (
         <div className={styles.resultCount}>
           {totalFiltered} recipe{totalFiltered !== 1 ? 's' : ''} matching <strong>"{q}"</strong>
+          <button
+            type="button"
+            className={styles.clearSearchBtn}
+            onClick={() => onSearch?.('')}
+            aria-label="Clear search"
+            title="Clear filter"
+          >×</button>
         </div>
       )}
       {noResults && (
-        q ? <EmptyState query={q} /> : (
+        q ? <EmptyState query={q} onClear={() => onSearch?.('')} /> : (
           <div className={styles.emptyState}>
             <p className={styles.emptyTitle}>
               {pinnedFilter ? 'No pinned recipes.' : madeFilter === 'made' ? 'No recipes marked as made yet.' : 'All recipes have been marked as made!'}

@@ -280,3 +280,41 @@
   color: var(--text-muted);
   padding: 10px 4px;
 }
+
+/* ---- Search clear button (inline in result count) ---- */
+.clearSearchBtn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  padding: 0 3px;
+  margin-left: 6px;
+  border-radius: 3px;
+  vertical-align: middle;
+  transition: color 0.15s;
+  font-family: inherit;
+}
+.clearSearchBtn:hover {
+  color: var(--text);
+}
+
+/* Clear filter button in empty state */
+.clearFilterBtn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 16px;
+  margin-top: 4px;
+  transition: background 0.15s, color 0.15s;
+  font-family: inherit;
+}
+.clearFilterBtn:hover {
+  background: var(--surface);
+  color: var(--text);
+}
